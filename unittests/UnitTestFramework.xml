@@ -430,7 +430,7 @@ ENDDECLARE
     cs = ClassSource(UserClassObject(CurObject.Class).ObjectSource);
     FOR i=1 TO cs.Methods.LastRow DO
 	methname = cs.Methods[i].Name;
-	IF LEFT(methname, 4)='test' THEN
+	IF lower(LEFT(methname, 4))='test' THEN
 	    CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
 	    IF CurMethod.SetExitTrap()=ER_OK THEN
 		// try

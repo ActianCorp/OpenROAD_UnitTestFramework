@@ -44,10 +44,10 @@ Method TestIntegerEqualFail()=
 		</script>
 		<methods>
 			<row>
-				<displayname>testIntegerEqualPass</displayname>
+				<displayname>TestIntegerEqualPass</displayname>
 			</row>
 			<row>
-				<displayname>testIntegerEqualFail</displayname>
+				<displayname>TestIntegerEqualFail</displayname>
 			</row>
 			<row_class>methodobject</row_class>
 		</methods>

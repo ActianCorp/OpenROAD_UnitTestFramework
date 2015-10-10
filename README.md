@@ -33,7 +33,7 @@ Sample usage:
        1. Include `UnitTestFramework`.
   2. Create new Userclass:
        1. Inherit from `testcase`.
-       2. Create Method in Userclass editor, that starts with the word `test` (NOTE lowercase).
+       2. Create Method in Userclass editor, that starts with the word `test`.
        3. Create Method code in script editor.
   3. Create 4gl procedure named `runtests` (or import from another test)
       1. Ensure `runtests` calls Userclass name defined from above
