@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<COMPONENT name="start4glproc" xsi:type="proc4glsource">
+		<script>
+			<![CDATA[procedure start4glproc()=
+{
+   CurExec.Trace(text = varchar(date('now'))+HC_TAB+
+	'$_ApplicationName.$_ComponentName');
+   CurSession.ExitCode = int4(CurSession.GetEnv(name='ORTESTEXITCODE'));
+}
+]]>
+		</script>
+	</COMPONENT>
+</OPENROAD>

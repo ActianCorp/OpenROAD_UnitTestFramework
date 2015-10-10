@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- Copyright (c) 2015 Actian Corporation. All Rights Reserved.-->
+	<APPLICATION name="unittests">
+		<included_apps>
+			<row>
+				<appname>core</appname>
+				<version>-1</version>
+				<imgfilename>core.plb</imgfilename>
+			</row>
+			<row_class>inclapp</row_class>
+		</included_apps>
+		<procstart>runtests</procstart>
+		<database_type>2</database_type>
+	</APPLICATION>
+	<COMPONENT name="_readme" xsi:type="scriptsource">
+		<script>
+			<![CDATA[Unit Test Framework for OpenROAD
+================================
+
+The framework is very simple, it consists of:
+-	A set of a few (7) user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
+-	Two global variables (one to reference the error of the last "Exception", the other to reference the Assert object)
+-	The 4GL procedure "executeTests" that invokes the "run" method on a test class passed
+
+When developing tests for a certain feature the developer has to:
+-	Create the test class(es)
+	- Add a subclass of TestCase to the application containing the framework or include them from a separate application
+	- Within the test class:
+		- You create and implement test methods (name must start with "test")
+			- Within the test* methods you execute the methods/procedures to be tested
+			  and use the assertion methods (using the G_Assert global variable) to verify the results.
+			  Example: G_Assert.assertEquals(expectedVarchar='krojo02', actualVarchar=CurSession.UserName, errortext = 'Wrong user!');
+			  If any assertion is not fulfilled then an error will be "thrown" (like an exception).
+		- You can override setUp() and tearDown() methods if required
+		 (setup will run before any test method, teardown will run after all have completed)
+-	Add other components needed within the test methods
+	(e.g. for the XMLParserCallbacksTests I had to add the callback 4GL procedures and a 4GL procedure that calculates the memory size of the current process)
+-	Create/edit a starting component (e.g. called "runtests"):
+	- It should call the procedure executeTests for each test class. Pass an object of the test class in the "test" parameter.
+
+Errors/Failures are logged in the Trace file/window.
+You can also run the application from command line and test the return status of the application (a non-zero code indicates a problem).
+This way I can easily add the tests to an automated test batch.
+]]>
+		</script>
+	</COMPONENT>
+	<COMPONENT name="Assert" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<script>
+			<![CDATA[METHOD fail(
+	errortext = varchar(2000) not null,
+	errorline = integer not null,
+	errorexec = varchar(100) not null	
+)=
+{
+    G_Error = Error.Create();
+    G_Error.errortext = errortext;
+    G_Error.errorline = errorline;
+    G_Error.errorexec = errorexec;
+    EXIT;
+}
+
+METHOD throwAssertionFailedError(
+	errortext = varchar(2000) not null,
+	errorline = integer not null,
+	errorexec = varchar(100) not null	
+)=
+{
+    G_Error = AssertionFailedError.Create();
+    G_Error.errortext = errortext;
+    G_Error.errorline = errorline;
+    G_Error.errorexec = errorexec;
+    EXIT;
+}
+
+METHOD assertEquals (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer default null;
+  actualInteger = Integer default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+   p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate <> actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger <> actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualInteger), '<NULL>') + '>' ,
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat <> actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualFloat), '<NULL>') + '>' );
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney <> actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualMoney), '<NULL>') + '>' );
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar <> actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualVarchar), '<NULL>') + '>' );
+    endif;
+  endif;
+end
+
+METHOD assertLessthan (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer default null;
+  actualInteger = Integer default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+   p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate <= actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger <= actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualInteger), '<NULL>') + '>' ,
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat <= actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualFloat), '<NULL>') + '>' );
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney <= actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualMoney), '<NULL>') + '>' );
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar <= actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual : <' + ifnull(varchar(actualVarchar), '<NULL>') + '>' );
+    endif;
+  endif;
+end
+
+METHOD assertSame (
+  errortext = varchar(2000) not null;
+  expected = Object default null;
+  actual = Object default null;
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+   p = ProcExec(CurMethod.Parent);
+   if expected <> actual then
+	if actual is null then
+	    CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + varchar(expected.InstanceIdentifier) + '>' +
+		' actual : <NULL>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+	else
+	    CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <' + varchar(expected.InstanceIdentifier) + '>' +
+		' actual : <' + varchar(actual.InstanceIdentifier) + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+	endif;
+    endif;
+end
+
+METHOD assertNull (
+  errortext = varchar(2000) not null;
+  actual = Object default null;
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+   p = ProcExec(CurMethod.Parent);
+   if actual IS NOT NULL then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <NULL>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+end
+
+METHOD assertNotNull (
+  errortext = varchar(2000) not null;
+  actual = Object default null;
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+   p = ProcExec(CurMethod.Parent);
+   if actual IS NULL then
+	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+		'expected: <Object not null> actual : <NULL object>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+end
+]]>
+		</script>
+		<methods>
+			<row>
+				<displayname>fail</displayname>
+			</row>
+			<row>
+				<displayname>throwAssertionFailedError</displayname>
+			</row>
+			<row>
+				<displayname>assertequals</displayname>
+			</row>
+			<row>
+				<displayname>assertnull</displayname>
+			</row>
+			<row>
+				<displayname>assertsame</displayname>
+			</row>
+			<row>
+				<displayname>assertnotnull</displayname>
+			</row>
+			<row>
+				<displayname>assertLessthan</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+	<COMPONENT name="AssertionFailedError" xsi:type="classsource">
+		<superclass>error</superclass>
+	</COMPONENT>
+	<COMPONENT name="Error" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<attributes>
+			<row>
+				<displayname>errortext</displayname>
+				<datatype>varchar(2000)</datatype>
+			</row>
+			<row>
+				<displayname>errorline</displayname>
+				<datatype>integer</datatype>
+			</row>
+			<row>
+				<displayname>errorexec</displayname>
+				<datatype>varchar(100)</datatype>
+			</row>
+			<row>
+				<displayname>testmethod</displayname>
+				<datatype>varchar(32)</datatype>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+	</COMPONENT>
+	<COMPONENT name="executeTests" xsi:type="proc4glsource">
+		<script>
+			<![CDATA[procedure executeTests
+(
+   test = TestCase
+)=
+declare
+    result = TestResult;
+    i = integer not null;
+    e = Error DEFAULT NULL;
+enddeclare
+{
+    CurProcedure.Trace(text= 'Running tests from ' + test.ClassName + ' ...');
+    test.run(result = result);
+
+    IF result.errors.LastRow>0 OR result.failures.LastRow>0 THEN
+	CurSession.ExitCode=1;
+	IF result.errors.LastRow>0 THEN
+	    CurProcedure.Trace(text= '=== Errors ===');
+	ENDIF;
+	FOR i=1 TO result.errors.LastRow DO
+	    e = result.errors[i].error;
+	    CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+		e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+	ENDFOR;
+	IF result.failures.LastRow>0 THEN
+	    CurProcedure.Trace(text= '=== Failures ===');
+	ENDIF;
+	FOR i=1 TO result.failures.LastRow DO
+	    e = result.failures[i].error;
+	    CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+		e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+	ENDFOR;
+    ELSE
+	CurProcedure.Trace(text= '=== All tests were successful. ===');
+    ENDIF;
+    CurProcedure.Trace(text= 'Finished running tests.');;
+}
+]]>
+		</script>
+	</COMPONENT>
+	<COMPONENT name="G_Assert" xsi:type="globsource">
+		<datatype>assert</datatype>
+	</COMPONENT>
+	<COMPONENT name="G_Error" xsi:type="globsource">
+		<datatype>error</datatype>
+	</COMPONENT>
+	<COMPONENT name="GetTickCount" xsi:type="proc3glsource">
+		<datatype>integer</datatype>
+		<libraryname>kernel32.dll</libraryname>
+	</COMPONENT>
+	<COMPONENT name="runtests" xsi:type="proc4glsource">
+		<script>
+			<![CDATA[procedure runtests() =
+{
+    CALLPROC executeTests(test = SampleTest.Create());
+}
+]]>
+		</script>
+	</COMPONENT>
+	<COMPONENT name="sampletest" xsi:type="classsource">
+		<versshortremarks>
+			<![CDATA[A sample test class]]>
+		</versshortremarks>
+		<superclass>testcase</superclass>
+		<script>
+			<![CDATA[METHOD testMethod1()=
+{
+    G_Assert.AssertEquals(expectedInteger=1 , actualInteger=1, errortext='Something wrong.');
+}
+]]>
+		</script>
+		<methods>
+			<row>
+				<displayname>testMethod1</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+	<COMPONENT name="Test" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<script>
+			<![CDATA[METHOD run()=
+{
+    CurMethod.Trace(text = 'Virtual method invoked: Test.run()');
+}
+]]>
+		</script>
+		<attributes>
+			<row>
+				<displayname>name</displayname>
+				<datatype>varchar(100)</datatype>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+		<methods>
+			<row>
+				<displayname>run</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+	<COMPONENT name="Testcase" xsi:type="classsource">
+		<superclass>test</superclass>
+		<script>
+			<![CDATA[METHOD run(result=TestResult DEFAULT NULL)=
+{
+    IF (result IS NULL) THEN
+	result = TestResult.Create();
+    ENDIF;
+    result.StartTest(thetest=CurObject);
+    CurObject.setUp();
+    CurObject.runTest(result=result); 
+    CurObject.tearDown();
+}
+
+METHOD runTest(result=TestResult DEFAULT NULL)=
+DECLARE
+    cs = ClassSource DEFAULT NULL;
+    i = INTEGER NOT NULL;
+    methname = VARCHAR(32) NOT NULL; 
+ENDDECLARE
+{
+    cs = ClassSource(UserClassObject(CurObject.Class).ObjectSource);
+    FOR i=1 TO cs.Methods.LastRow DO
+	methname = cs.Methods[i].Name;
+	IF LEFT(methname, 4)='test' THEN
+	    CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
+	    IF CurMethod.SetExitTrap()=ER_OK THEN
+		// try
+		CurObject.:methname();
+	    ELSE // catch
+		IF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
+		    result.AddFailure(thetest=CurObject, testmethod=methname);
+		ELSE
+		    result.AddError(thetest=CurObject, testmethod=methname);
+		ENDIF;
+	    ENDIF;
+	ENDIF;
+    ENDFOR;
+}
+
+METHOD setUp()=
+{
+}
+
+METHOD tearDown()=
+{
+}
+]]>
+		</script>
+		<methods>
+			<row>
+				<displayname>run</displayname>
+			</row>
+			<row>
+				<displayname>runTest</displayname>
+				<isprivate>1</isprivate>
+			</row>
+			<row>
+				<displayname>setUp</displayname>
+				<isprivate>1</isprivate>
+			</row>
+			<row>
+				<displayname>tearDown</displayname>
+				<isprivate>1</isprivate>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+	<COMPONENT name="TestFailure" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<attributes>
+			<row>
+				<displayname>error</displayname>
+				<datatype>error</datatype>
+				<isnullable>1</isnullable>
+			</row>
+			<row>
+				<displayname>test</displayname>
+				<datatype>test</datatype>
+				<isnullable>1</isnullable>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+	</COMPONENT>
+	<COMPONENT name="TestResult" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<script>
+			<![CDATA[METHOD startTest(thetest = Test)=
+{
+    CurObject.fRunTests = CurObject.fRunTests+1;
+}
+
+METHOD AddFailure(thetest = Test, testmethod = varchar(32) not null)=
+DECLARE
+    i=INTEGER NOT NULL;
+ENDDECLARE
+{
+    i = CurObject.Failures.LastRow+1;
+    CurObject.Failures[i].test=thetest;
+    CurObject.Failures[i].error=G_error;
+    CurObject.Failures[i].error.testmethod = testmethod;
+    
+    G_error = NULL;
+}
+
+METHOD AddError(thetest = Test, testmethod = varchar(32) not null)=
+DECLARE
+    i=INTEGER NOT NULL;
+ENDDECLARE
+{
+    i = CurObject.Errors.LastRow+1;
+    CurObject.Errors[i].test=thetest;
+    CurObject.Errors[i].error=G_error;
+    CurObject.Errors[i].error.testmethod = testmethod;
+    G_error = NULL;
+}
+]]>
+		</script>
+		<attributes>
+			<row>
+				<displayname>fRunTests</displayname>
+				<datatype>integer</datatype>
+				<isprivate>1</isprivate>
+			</row>
+			<row>
+				<displayname>errors</displayname>
+				<datatype>testfailure</datatype>
+				<isarray>1</isarray>
+				<isnullable>1</isnullable>
+			</row>
+			<row>
+				<displayname>failures</displayname>
+				<datatype>testfailure</datatype>
+				<isarray>1</isarray>
+				<isnullable>1</isnullable>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+		<methods>
+			<row>
+				<displayname>startTest</displayname>
+			</row>
+			<row>
+				<displayname>addError</displayname>
+			</row>
+			<row>
+				<displayname>addFailure</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+</OPENROAD>

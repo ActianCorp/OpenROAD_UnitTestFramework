@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<APPLICATION name="ExampleTests">
+		<included_apps>
+			<row>
+				<appname>core</appname>
+				<version>-1</version>
+				<imgfilename>core.plb</imgfilename>
+			</row>
+			<row>
+				<sequence>1</sequence>
+				<appname>unittests</appname>
+				<version>-1</version>
+			</row>
+			<row_class>inclapp</row_class>
+		</included_apps>
+		<procstart>runtests</procstart>
+	</APPLICATION>
+	<COMPONENT name="runtests" xsi:type="proc4glsource">
+		<script>
+			<![CDATA[procedure runtests() =
+{
+    CALLPROC executeTests(test = TestAssertEquals.Create());
+}
+]]>
+		</script>
+	</COMPONENT>
+	<COMPONENT name="TestAssertEquals" xsi:type="classsource">
+		<superclass>testcase</superclass>
+		<script>
+			<![CDATA[Method TestIntegerEqualPass()=
+{
+
+    G_Assert.assertEquals( expectedInteger = 35, actualInteger = 35 );
+    
+}
+
+Method TestIntegerEqualFail()=
+{
+
+    G_Assert.assertEquals( expectedInteger = 35, actualInteger = -2345 );
+    
+}]]>
+		</script>
+		<methods>
+			<row>
+				<displayname>testIntegerEqualPass</displayname>
+			</row>
+			<row>
+				<displayname>testIntegerEqualFail</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
+	</COMPONENT>
+</OPENROAD>
