@@ -120,14 +120,14 @@ TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests XML files into test directory $
 
 rc=0
 
-w4gldev backupapp in ${TESTDB} unittests unittests.xml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly
+w4gldev backupapp in ${TESTDB} UnitTestFramework UnitTestFramework.xml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly
 if [ $? -ne 0 ]
 then
-    printf "\nUnable to import application unittests into ${TESTDB}.\n"
+    printf "\nUnable to import application UnitTestFramework into ${TESTDB}.\n"
     TEST_CLEANUP 1
 fi
 
-for utxml in $(ls *.xml | grep -v "^unittests\.xml")
+for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml")
 do
     utapp=$(basename $utxml .xml)
     w4gldev backupapp in ${TESTDB} $utapp $utxml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly -A

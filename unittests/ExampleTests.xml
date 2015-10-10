@@ -9,7 +9,7 @@
 			</row>
 			<row>
 				<sequence>1</sequence>
-				<appname>unittests</appname>
+				<appname>UnitTestFramework</appname>
 				<version>-1</version>
 			</row>
 			<row_class>inclapp</row_class>

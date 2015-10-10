@@ -30,7 +30,7 @@ Sample usage:
 ## Instructions
 
   1. Create a new application:
-       1. Include `unittests`    FIXME rename, `UnitTestFramework`.
+       1. Include `UnitTestFramework`.
   2. Create new Userclass:
        1. Inherit from `testcase`.
        2. Create Method in Userclass editor, that starts with the word `test` (NOTE lowercase).
