@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<!-- Copyright (c) 2015 Actian Corporation. All Rights Reserved.-->
 	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
@@ -409,7 +408,12 @@ enddeclare
 	<COMPONENT name="Testcase" xsi:type="classsource">
 		<superclass>test</superclass>
 		<script>
-			<![CDATA[METHOD run(result=TestResult DEFAULT NULL)=
+			<![CDATA[INITIALIZE=
+DECLARE
+        getAppSource = PROCEDURE RETURNING AppSource;
+ENDDECLARE
+
+METHOD run(result=TestResult DEFAULT NULL)=
 {
     IF (result IS NULL) THEN
 	result = TestResult.Create();
@@ -424,13 +428,21 @@ METHOD runTest(result=TestResult DEFAULT NULL)=
 DECLARE
     cs = ClassSource DEFAULT NULL;
     i = INTEGER NOT NULL;
-    methname = VARCHAR(32) NOT NULL; 
+    methname = VARCHAR(32) NOT NULL;
+    ucl = UserClassObject DEFAULT NULL;
+    appsrc = AppSource DEFAULT NULL;
 ENDDECLARE
 {
-    cs = ClassSource(UserClassObject(CurObject.Class).ObjectSource);
+    ucl = UserClassObject(CurObject.Class);
+    cs = ClassSource(ucl.ObjectSource);
+    IF cs IS NULL THEN
+        // ClassSource not found (class from image) - using workaround.
+        appsrc = getAppSource();
+        cs = appsrc.FetchComponent(componentname=ucl.FullName);
+    ENDIF;
     FOR i=1 TO cs.Methods.LastRow DO
 	methname = cs.Methods[i].Name;
-	IF lower(LEFT(methname, 4))='test' THEN
+	IF LOWERCASE(LEFT(methname, 4))='test' THEN
 	    CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
 	    IF CurMethod.SetExitTrap()=ER_OK THEN
 		// try
@@ -453,6 +465,24 @@ METHOD setUp()=
 METHOD tearDown()=
 {
 }
+
+PROCEDURE getAppSource()=
+DECLARE
+	pExec = ProcExec DEFAULT NULL;
+ENDDECLARE
+BEGIN
+	pExec = CurProcedure.Parent;
+	WHILE pExec.Parent IS NOT NULL DO
+		IF pExec.Parent.IsA(class = ProcExec)=TRUE THEN
+			pExec = pExec.Parent;
+		ELSE
+			ENDLOOP;
+		ENDIF;
+	ENDWHILE;
+	
+	RETURN pExec.ObjectSource.ParentApplication;
+END;
+
 ]]>
 		</script>
 		<methods>
