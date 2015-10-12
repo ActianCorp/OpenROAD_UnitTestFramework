@@ -127,7 +127,7 @@ then
     TEST_CLEANUP 1
 fi
 
-for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml")
+for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml" | grep -v "^UnitTestRunner\.xml")
 do
     utapp=$(basename $utxml .xml)
     w4gldev backupapp in ${TESTDB} $utapp $utxml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly -A
