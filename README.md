@@ -3,6 +3,7 @@
 Needs:
 
   * OpenROAD 6.2 (due to renameapp requirement)
+       * Ingres (for example Ingres 10.2 + latest patch) for test database
   * Cygwin (from https://www.cygwin.com/)
       * bash (some bash extensions have been used)
       * diffutils (diff)
