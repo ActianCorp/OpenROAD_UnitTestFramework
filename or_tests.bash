@@ -111,6 +111,10 @@ export II_LOG=.
 export II_W4GL_EXPORT_INDENTED=TRUE
 unset II_W4GL_EXPORT_COMMENT
 
+if [ -f ${SCRIPTDIR}/custom_preimport.bash ]
+then
+    bash ${SCRIPTDIR}/custom_preimport.bash
+fi
 
 printf "\nOR Unit tests:\n Using logfile $TESTDIR/orunittest.log ...\n\n"
 
