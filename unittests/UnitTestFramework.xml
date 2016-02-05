@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- Copyright (c) 2016 Actian Corporation. All Rights Reserved.-->
 	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
@@ -87,47 +88,53 @@ METHOD assertEquals (
   actualVarchar = varchar(4096) default null;
 ) =
 declare
-    p = ProcExec DEFAULT NULL;
+  p = ProcExec DEFAULT NULL;
 enddeclare
 begin
-   p = ProcExec(CurMethod.Parent);
+  p = ProcExec(CurMethod.Parent);
   if expectedDate is not null then
     if expectedDate <> actualDate then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
   endif;
   if expectedInteger is not null then
     if expectedInteger <> actualInteger then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualInteger), '<NULL>') + '>' ,
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
   endif;
   if expectedFloat is not null then
     if expectedFloat <> actualFloat then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualFloat), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
   if expectedMoney is not null then
     if expectedMoney <> actualMoney then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualMoney), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
   if expectedVarchar is not null then
     if expectedVarchar <> actualVarchar then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualVarchar), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
 end
@@ -146,47 +153,53 @@ METHOD assertLessthan (
   actualVarchar = varchar(4096) default null;
 ) =
 declare
-    p = ProcExec DEFAULT NULL;
+   p = ProcExec DEFAULT NULL;
 enddeclare
 begin
-   p = ProcExec(CurMethod.Parent);
+  p = ProcExec(CurMethod.Parent);
   if expectedDate is not null then
     if expectedDate <= actualDate then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
   endif;
   if expectedInteger is not null then
     if expectedInteger <= actualInteger then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualInteger), '<NULL>') + '>' ,
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
   endif;
   if expectedFloat is not null then
     if expectedFloat <= actualFloat then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualFloat), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
   if expectedMoney is not null then
     if expectedMoney <= actualMoney then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualMoney), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
   if expectedVarchar is not null then
     if expectedVarchar <= actualVarchar then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
-		' actual : <' + ifnull(varchar(actualVarchar), '<NULL>') + '>' );
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
     endif;
   endif;
 end
@@ -203,15 +216,15 @@ begin
    p = ProcExec(CurMethod.Parent);
    if expected <> actual then
 	if actual is null then
-	    CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	    CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + varchar(expected.InstanceIdentifier) + '>' +
-		' actual : <NULL>',
+		' actual: <NULL>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
 	else
-	    CurObject.throwAssertionFailedError(errortext=errortext+'; '+
+	    CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 		'expected: <' + varchar(expected.InstanceIdentifier) + '>' +
-		' actual : <' + varchar(actual.InstanceIdentifier) + '>',
+		' actual: <' + varchar(actual.InstanceIdentifier) + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
 	endif;
@@ -228,8 +241,8 @@ enddeclare
 begin
    p = ProcExec(CurMethod.Parent);
    if actual IS NOT NULL then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
-		'expected: <NULL>',
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected: <NULL> actual: ' + actual.ClassName,
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
@@ -245,8 +258,8 @@ enddeclare
 begin
    p = ProcExec(CurMethod.Parent);
    if actual IS NULL then
-	CurObject.throwAssertionFailedError(errortext=errortext+'; '+
-		'expected: <Object not null> actual : <NULL object>',
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected: <Object not null> actual: <NULL object>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
     endif;
