@@ -19,7 +19,7 @@ TEST_CLEANUP()
     if [ -d $TESTDIR ]
     then
         cd $TESTDIR
-        rm -f *.xml *.img
+        rm -f *.xml *.img *.cfg ignore_apps.lst
     fi
     exit $return_code
 }
@@ -53,11 +53,6 @@ TEST_CHECKCMD()
 
       if [ "$h_clf_critical" = "Y" ]
       then
-         if [ -f $TESTDIR/test.log ]
-         then
-            printf "\nw4gl log file:\n\n"
-            cat $TESTDIR/test.log
-         fi
          TEST_CLEANUP 1
       else
           ((rv++))
@@ -102,25 +97,29 @@ TEST_CHECKCMD $? 0 "Y" "Unable to connect to ${TESTDB}"
 chmod 644 *.xml unittests/*.xml
 mkdir -p $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to create test directory $TESTDIR"
-cp $SCRIPTDIR/*.xml $TESTDIR
-TEST_CHECKCMD $? 0 "Y" "Unable to copy XML files into test directory $TESTDIR"
-cd $TESTDIR
-TEST_CHECKCMD $? 0 "Y" "Unable to change to test directory $TESTDIR"
 
-export II_LOG=.
+export II_LOG=$TESTDIR
 export II_W4GL_EXPORT_INDENTED=TRUE
 unset II_W4GL_EXPORT_COMMENT
 
 if [ -f ${SCRIPTDIR}/custom_preimport.bash ]
 then
     bash ${SCRIPTDIR}/custom_preimport.bash
+    rv=$?
+    if [ $rv -lt 0 ]
+    then
+#   critical error detected
+        TEST_CLEANUP $rv
+    fi
 fi
 
-printf "\nOR Unit tests:\n Using logfile $TESTDIR/orunittest.log ...\n\n"
+printf "\nOR Unit tests:\n Using logfile ${TESTDIR}/orunittest.log ...\n\n"
 
+cd $TESTDIR
+TEST_CHECKCMD $? 0 "Y" "Unable to change into ${TESTDIR}"
 rm -f *.xml
-cp ${SCRIPTDIR}/unittests/*.xml .
-TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests XML files into test directory $TESTDIR"
+cp ${SCRIPTDIR}/unittests/* .
+TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests files into test directory ${TESTDIR}"
 
 rc=0
 
@@ -131,7 +130,7 @@ then
     TEST_CLEANUP 1
 fi
 
-for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml" | grep -v "^UnitTestRunner\.xml")
+for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml" | grep -v "^UnitTestRunner\.xml" | sort)
 do
     utapp=$(basename $utxml .xml)
     w4gldev backupapp in ${TESTDB} $utapp $utxml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly -A
@@ -139,7 +138,45 @@ do
     if [ $rv1 -eq 0 ]
     then
         printf " ${utapp}: ... "
-        w4gldev rundbapp ${TESTDB} $utapp -nowindows -Lorunittest.log -Tyes,logonly -A
+        if [ -f ignore_apps.lst ]
+        then
+            grep -w -i ${utapp} ignore_apps.lst > /dev/null && {
+                printf "IGNORED\n"
+                continue
+            }
+        fi
+
+        runner=""
+        runflags=""
+        makeimageflags=""
+        if [ -f ${utapp}.cfg ]
+        then
+            runner=`grep "^RUNNER=" ${utapp}.cfg | cut -f2 -d'='`
+            runflags=`grep "^RUNFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
+            makeimageflags=`grep "^MAKEIMAGEFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
+        fi
+
+        if [ -z "$runner" ]
+        then
+            runcmd="w4gldev rundbapp ${TESTDB} $utapp -nowindows -Lorunittest.log -Tyes,logonly -A ${runflags}"
+        else
+            if [ "$runner" = "runimage" ]
+            then
+                w4gldev makeimage ${TESTDB} $utapp ${utapp}.img -nowindows -Lorunittest.log -Tyes,logonly -A ${makeimageflags}
+                if [ $? -ne 0 ]
+                then
+                    printf "makeimage of application FAILED.\n"
+                    ((rc++))
+                    continue
+                fi
+                runcmd="w4gldev runimage ${utapp}.img -nowindows -Lorunittest.log -Tyes,logonly -A ${runflags}"
+            else
+# Run your own script to execute the test - passing application name as parameter (TESTDB and TESTDIR are set in environment)
+                runcmd="${runner} $utapp"
+            fi
+        fi
+
+        ${runcmd}
         if [ $? -eq 0 ]
         then
             printf "OK.\n"
@@ -153,13 +190,12 @@ do
     fi
 done
 
-if [ $rc -ne 0 ] || [ $rv -ne 0 ]
+if [ $rc -ne 0 ]
 then
-   printf "\nOR Tests completed. ERROR(s) encountered in %s non-critical command line test(s) and %s unit test(s).\n" $rv $rc
-   TEST_CLEANUP 1
+   printf "\nOR Unit Tests completed. ERROR(s) encountered in %s unit test(s).\n" $rc
+   TEST_CLEANUP $rc
 else
-    printf "\nOR Tests successfully executed.\n"
+    printf "\nOR Unit Tests successfully executed.\n"
+    TEST_CLEANUP 0
 fi
-
-TEST_CLEANUP $rv
 
