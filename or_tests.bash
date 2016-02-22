@@ -98,7 +98,7 @@ chmod 644 *.xml unittests/*.xml
 mkdir -p $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to create test directory $TESTDIR"
 
-export II_LOG=$TESTDIR
+export II_LOG=.
 export II_W4GL_EXPORT_INDENTED=TRUE
 unset II_W4GL_EXPORT_COMMENT
 
