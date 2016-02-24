@@ -8,7 +8,8 @@ path C:\cygwin64\bin;%PATH%
 :: allow Windows new lines in shell scripts with Cygwin
 set SHELLOPTS=igncr
 
-:: TODO check and create C:\temp?
+set ORTEST_TEMP_DIR=C:\temp
+IF NOT EXIST %ORTEST_TEMP_DIR% mkdir %ORTEST_TEMP_DIR%
 
 set DBNAME=%1
 bash or_tests.bash %DBNAME%
