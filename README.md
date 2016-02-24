@@ -13,20 +13,16 @@ Needs:
 
 Sample usage:
 
-    # Windows/Cygwin specific
-    # Ensure Cygwin is in the path, assuming default location for 32-bit or 64-bit:
-    path C:\cygwin\bin;%PATH%
-    path C:\cygwin64\bin;%PATH%
-
-    # allow Windows new lines in shell scripts
-    set SHELLOPTS=igncr
-
-    md C:\temp
-
     destroydb -uingres orunit
     createdb -uingres orunit
     bash or_tests.bash orunit
-    #bash or_tests.bash localXI::orunit
+
+Windows users can call bash directly as above (assuming Cygwin in the path) or instead use the convience wrapper script `or_tests.bat`
+
+    destroydb -uingres orunit
+    createdb -uingres orunit
+    or_tests orunit
+
 
 ## Instructions
 

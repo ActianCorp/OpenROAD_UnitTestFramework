@@ -102,6 +102,12 @@ export II_LOG=.
 export II_W4GL_EXPORT_INDENTED=TRUE
 unset II_W4GL_EXPORT_COMMENT
 
+cygwin=false
+if [ `uname -o` = Cygwin ]
+then
+    cygwin=true
+fi
+
 if [ -f ${SCRIPTDIR}/custom_preimport.bash ]
 then
     bash ${SCRIPTDIR}/custom_preimport.bash
@@ -113,7 +119,15 @@ then
     fi
 fi
 
-printf "\nOR Unit tests:\n Using logfile ${TESTDIR}/orunittest.log ...\n\n"
+printf "\nOR Unit tests:\n"
+if $cygwin
+then
+    display_log_file=`cygpath --windows ${TESTDIR}/orunittest.log`
+else
+    display_log_file=${TESTDIR}/orunittest.log
+fi
+echo " Using logfile ${display_log_file} ..."
+printf "\n\n"
 
 cd $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to change into ${TESTDIR}"
@@ -190,6 +204,9 @@ do
     fi
 done
 
+echo ''
+echo Detailed log ${display_log_file}
+
 if [ $rc -ne 0 ]
 then
    printf "\nOR Unit Tests completed. ERROR(s) encountered in %s unit test(s).\n" $rc
@@ -198,4 +215,3 @@ else
     printf "\nOR Unit Tests successfully executed.\n"
     TEST_CLEANUP 0
 fi
-
