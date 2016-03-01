@@ -5,7 +5,7 @@
 #   Ingres/Net and OR Server should  be running.
 #   The parameter passed is the database (incl. vnode) used for the tests.
 # USAGE:
-#        or_tests.bash <dbname>
+#        or_tests.bash <dbname> [<testno>]
 #
 
 # -----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ export II_W4GL_EXPORT_INDENTED=TRUE
 unset II_W4GL_EXPORT_COMMENT
 
 cygwin=false
-if [ `uname -o` = Cygwin ]
+if [ `uname | grep "^CYGWIN"` ]
 then
     cygwin=true
 fi
