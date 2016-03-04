@@ -76,8 +76,8 @@ METHOD throwAssertionFailedError(
 
 METHOD assertEquals (
   errortext = varchar(2000) not null;
-  expectedInteger = Integer default null;
-  actualInteger = Integer default null;
+  expectedInteger = Integer8 default null;
+  actualInteger = Integer8 default null;
   expectedFloat = Float default null;
   actualFloat = Float default null;
   expectedMoney = Float default null;
