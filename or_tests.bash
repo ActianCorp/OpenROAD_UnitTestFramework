@@ -191,12 +191,18 @@ do
         fi
 
         ${runcmd}
-        if [ $? -eq 0 ]
+		rv2 = $?
+        if [ $rv2 -eq 0 ]
         then
             printf "OK.\n"
         else
-            printf "FAILED.\n"
-            ((rc++))
+			if [ $rv2 -eq -1 ]
+			then
+				printf "OK (Some/or all tests have been SKIPPED).\n"
+			else
+				printf "FAILED.\n"
+				((rc++))
+			fi
         fi
     else
         printf " ${utapp}: Import of application FAILED.\n"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<!-- Copyright (c) 2016 Actian Corporation. All Rights Reserved.-->
-	<APPLICATION name="UnitTestFramework">
+	<APPLICATION name="unittestframework">
 		<included_apps>
 			<row>
 				<appname>core</appname>
@@ -19,7 +19,7 @@
 ================================
 
 The framework is very simple, it consists of:
--	A set of a few (7) user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
+-	A set of a few (8) user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
 -	Two global variables (one to reference the error of the last "Exception", the other to reference the Assert object)
 -	The 4GL procedure "executeTests" that invokes the "run" method on a test class passed
 
@@ -34,13 +34,16 @@ When developing tests for a certain feature the developer has to:
 			  If any assertion is not fulfilled then an error will be "thrown" (like an exception).
 		- You can override setUp() and tearDown() methods if required
 		 (setup will run before any test method, teardown will run after all have completed)
+		- You can skip a test by using the skipTest method (using the G_Assert global variable).
+		  This can be done in either the setUp() method (which will skip all tests in the class) or in each test method.
 -	Add other components needed within the test methods
 	(e.g. for the XMLParserCallbacksTests I had to add the callback 4GL procedures and a 4GL procedure that calculates the memory size of the current process)
 -	Create/edit a starting component (e.g. called "runtests"):
 	- It should call the procedure executeTests for each test class. Pass an object of the test class in the "test" parameter.
 
-Errors/Failures are logged in the Trace file/window.
-You can also run the application from command line and test the return status of the application (a non-zero code indicates a problem).
+Errors/Failures/Skipped are logged in the Trace file/window.
+You can also run the application from command line and test the return status of the application
+(1 indicates an error/failure, 0 means success, -1 indicates skipped tests, but otherwise ok).
 This way I can easily add the tests to an automated test batch.
 ]]>
 		</script>
@@ -73,6 +76,21 @@ METHOD throwAssertionFailedError(
     G_Error.errorexec = errorexec;
     EXIT;
 }
+
+METHOD skipTest(
+	errortext  = varchar(2000) not null
+) =
+declare
+    p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+	p = ProcExec(CurMethod.Parent);
+    G_Error = SkippedTest.Create();
+    G_Error.errortext = errortext;
+    G_Error.errorline = p.linenumber;
+    G_Error.errorexec = p.Name;
+    EXIT;
+end
 
 METHOD assertEquals (
   errortext = varchar(2000) not null;
@@ -139,7 +157,72 @@ begin
   endif;
 end
 
-METHOD assertLessthan (
+METHOD assertNotEquals (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer8 default null;
+  actualInteger = Integer8 default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+  p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+  p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate = actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected not equals: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger = actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected not equals: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat = actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected not equals: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney = actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected not equals: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar = actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected not equals: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+end
+
+METHOD assertLessThan (
   errortext = varchar(2000) not null;
   expectedInteger = Integer default null;
   actualInteger = Integer default null;
@@ -160,7 +243,7 @@ begin
   if expectedDate is not null then
     if expectedDate <= actualDate then
 	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-		'expected: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		'expected less than: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
 		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
@@ -169,7 +252,7 @@ begin
   if expectedInteger is not null then
     if expectedInteger <= actualInteger then
 	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-		'expected: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		'expected less than: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
 		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
@@ -178,7 +261,7 @@ begin
   if expectedFloat is not null then
     if expectedFloat <= actualFloat then
 	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-		'expected: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		'expected less than: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
 		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
@@ -187,7 +270,7 @@ begin
   if expectedMoney is not null then
     if expectedMoney <= actualMoney then
 	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-		'expected: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		'expected less than: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
 		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
@@ -196,7 +279,202 @@ begin
   if expectedVarchar is not null then
     if expectedVarchar <= actualVarchar then
 	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-		'expected: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		'expected less than: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+end
+
+METHOD assertLessEquals (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer default null;
+  actualInteger = Integer default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+   p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+  p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate < actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected less or equals: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger < actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected less or equals: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat < actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected  less or equals: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney < actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected  less or equals: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar < actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected less or equals: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+end
+
+METHOD assertGreaterThan (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer default null;
+  actualInteger = Integer default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+   p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+  p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate >= actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater than: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger >= actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater than: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat >= actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater than: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney >= actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater than: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar >= actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater than: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+end
+
+METHOD assertGreaterEquals (
+  errortext = varchar(2000) not null;
+  expectedInteger = Integer default null;
+  actualInteger = Integer default null;
+  expectedFloat = Float default null;
+  actualFloat = Float default null;
+  expectedMoney = Float default null;
+  actualMoney = Float default null;
+  expectedDate = Date default null;
+  actualDate = Date default null;
+  expectedVarchar = varchar(4096) default null;
+  actualVarchar = varchar(4096) default null;
+) =
+declare
+   p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+  p = ProcExec(CurMethod.Parent);
+  if expectedDate is not null then
+    if expectedDate > actualDate then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater or equals: <' + ifnull(varchar(expectedDate), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualDate), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedInteger is not null then
+    if expectedInteger > actualInteger then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater or equals: <' + ifnull(varchar(expectedInteger), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualInteger), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedFloat is not null then
+    if expectedFloat > actualFloat then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected  greater or equals: <' + ifnull(varchar(expectedFloat), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualFloat), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedMoney is not null then
+    if expectedMoney > actualMoney then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected  greater or equals: <' + ifnull(varchar(expectedMoney), '<NULL>') + '>' +
+		' actual: <' + ifnull(varchar(actualMoney), '<NULL>') + '>',
+		errorline = p.linenumber,
+		errorexec =  p.Name);
+    endif;
+  endif;
+  if expectedVarchar is not null then
+    if expectedVarchar > actualVarchar then
+	CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+		'expected greater or equals: <' + ifnull(varchar(expectedVarchar), '<NULL>') + '>' +
 		' actual: <' + ifnull(varchar(actualVarchar), '<NULL>') + '>',
 		errorline = p.linenumber,
 		errorexec =  p.Name);
@@ -228,6 +506,35 @@ begin
 		errorline = p.linenumber,
 		errorexec =  p.Name);
 	endif;
+    endif;
+end
+
+METHOD assertNotSame (
+	errortext = varchar(2000) not null;
+	expected = Object default null;
+	actual = Object default null;
+) =
+declare
+	p = ProcExec DEFAULT NULL;
+enddeclare
+begin
+	p = ProcExec(CurMethod.Parent);
+	if expected is null then
+		if actual is null then
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'expected is not: <NULL>' +
+				' actual: <NULL>',
+				errorline = p.linenumber,
+				errorexec =  p.Name);
+		endif;
+	elseif actual is not null then
+		if expected = actual then
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+			'expected is not: <' + varchar(expected.InstanceIdentifier) + '>' +
+			' actual: <' + varchar(actual.InstanceIdentifier) + '>',
+			errorline = p.linenumber,
+			errorexec =  p.Name);
+		endif;
     endif;
 end
 
@@ -286,7 +593,25 @@ end
 				<displayname>assertnotnull</displayname>
 			</row>
 			<row>
-				<displayname>assertLessthan</displayname>
+				<displayname>assertlessthan</displayname>
+			</row>
+			<row>
+				<displayname>assertgreaterthan</displayname>
+			</row>
+			<row>
+				<displayname>assertgreaterequals</displayname>
+			</row>
+			<row>
+				<displayname>assertlessequals</displayname>
+			</row>
+			<row>
+				<displayname>assertnotsame</displayname>
+			</row>
+			<row>
+				<displayname>assertnotequals</displayname>
+			</row>
+			<row>
+				<displayname>skipTest</displayname>
 			</row>
 			<row_class>methodobject</row_class>
 		</methods>
@@ -320,39 +645,56 @@ end
 		<script>
 			<![CDATA[procedure executeTests
 (
-   test = TestCase
+	test = TestCase
 )=
 declare
-    result = TestResult;
-    i = integer not null;
-    e = Error DEFAULT NULL;
+	result = TestResult;
+	i = integer not null;
+	e = Error DEFAULT NULL;
+	allok = SMALLINT NOT NULL;
 enddeclare
 {
-    CurProcedure.Trace(text= 'Running tests from ' + test.ClassName + ' ...');
-    test.run(result = result);
+	CurProcedure.Trace(text= 'Running tests from ' + test.ClassName + ' ...');
+	test.run(result = result);
 
-    IF result.errors.LastRow>0 OR result.failures.LastRow>0 THEN
-	CurSession.ExitCode=1;
-	IF result.errors.LastRow>0 THEN
-	    CurProcedure.Trace(text= '=== Errors ===');
+	IF result.errors.LastRow>0 OR result.failures.LastRow>0 THEN
+		CurSession.ExitCode=1;
+		IF result.errors.LastRow>0 THEN
+			CurProcedure.Trace(text= '=== Errors ===');
+		ENDIF;
+		FOR i=1 TO result.errors.LastRow DO
+			e = result.errors[i].error;
+			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+			e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+		ENDFOR;
+		IF result.failures.LastRow>0 THEN
+			CurProcedure.Trace(text= '=== Failures ===');
+		ENDIF;
+		FOR i=1 TO result.failures.LastRow DO
+			e = result.failures[i].error;
+			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+			e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+		ENDFOR;
+	ELSE
+		allok = TRUE;
 	ENDIF;
-	FOR i=1 TO result.errors.LastRow DO
-	    e = result.errors[i].error;
-	    CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
-		e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
-	ENDFOR;
-	IF result.failures.LastRow>0 THEN
-	    CurProcedure.Trace(text= '=== Failures ===');
+
+	IF result.skipped.LastRow>0 THEN
+		CurSession.ExitCode=-1;
+		IF result.skipped.LastRow>0 THEN
+			CurProcedure.Trace(text= '=== Skipped Tests ===');
+		ENDIF;
+		FOR i=1 TO result.skipped.LastRow DO
+			e = result.skipped[i].error;
+			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+				HC_NEWLINE + HC_TAB + e.errortext);
+		ENDFOR;		
 	ENDIF;
-	FOR i=1 TO result.failures.LastRow DO
-	    e = result.failures[i].error;
-	    CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
-		e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
-	ENDFOR;
-    ELSE
-	CurProcedure.Trace(text= '=== All tests were successful. ===');
-    ENDIF;
-    CurProcedure.Trace(text= 'Finished running tests.');;
+
+	IF allok=TRUE THEN
+		CurProcedure.Trace(text= '=== All tests were successful. ===');
+	ENDIF;
+	CurProcedure.Trace(text= 'Finished running tests.');
 }
 ]]>
 		</script>
@@ -395,6 +737,9 @@ enddeclare
 			<row_class>methodobject</row_class>
 		</methods>
 	</COMPONENT>
+	<COMPONENT name="SkippedTest" xsi:type="classsource">
+		<superclass>error</superclass>
+	</COMPONENT>
 	<COMPONENT name="Test" xsi:type="classsource">
 		<superclass>userobject</superclass>
 		<script>
@@ -423,16 +768,28 @@ enddeclare
 		<script>
 			<![CDATA[INITIALIZE=
 DECLARE
-        getAppSource = PROCEDURE RETURNING AppSource;
+	getAppSource = PROCEDURE RETURNING AppSource;
 ENDDECLARE
 
 METHOD run(result=TestResult DEFAULT NULL)=
 {
-    IF (result IS NULL) THEN
-	result = TestResult.Create();
-    ENDIF;
+	IF (result IS NULL) THEN
+		result = TestResult.Create();
+	ENDIF;
     result.StartTest(thetest=CurObject);
-    CurObject.setUp();
+	IF CurMethod.SetExitTrap()=ER_OK THEN
+	// try
+		CurObject.setUp();
+	ELSE // catch
+		IF G_Error.IsA(class=SkippedTest)=TRUE THEN
+			result.AddSkipped(thetest=CurObject, testmethod='setUp');
+		ELSEIF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
+			result.AddFailure(thetest=CurObject, testmethod='setUp');
+		ELSE
+			result.AddError(thetest=CurObject, testmethod='setUp');
+		ENDIF;
+		RETURN;
+	ENDIF;
     CurObject.runTest(result=result); 
     CurObject.tearDown();
 }
@@ -451,23 +808,25 @@ ENDDECLARE
     IF cs IS NULL THEN
         // ClassSource not found (class from image) - using workaround.
         appsrc = getAppSource();
-        cs = appsrc.FetchComponent(componentname=ucl.FullName);
+        cs = ClassSource(appsrc.FetchComponent(componentname=ucl.FullName));
     ENDIF;
     FOR i=1 TO cs.Methods.LastRow DO
-	methname = cs.Methods[i].Name;
-	IF LOWERCASE(LEFT(methname, 4))='test' THEN
-	    CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
-	    IF CurMethod.SetExitTrap()=ER_OK THEN
-		// try
-		CurObject.:methname();
-	    ELSE // catch
-		IF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
-		    result.AddFailure(thetest=CurObject, testmethod=methname);
-		ELSE
-		    result.AddError(thetest=CurObject, testmethod=methname);
+		methname = cs.Methods[i].Name;
+		IF LOWERCASE(LEFT(methname, 4))='test' THEN
+			CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
+			IF CurMethod.SetExitTrap()=ER_OK THEN
+			// try
+			CurObject.:methname();
+			ELSE // catch
+				IF G_Error.IsA(class=SkippedTest)=TRUE THEN
+					result.AddSkipped(thetest=CurObject, testmethod=methname);
+				ELSEIF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
+					result.AddFailure(thetest=CurObject, testmethod=methname);
+				ELSE
+					result.AddError(thetest=CurObject, testmethod=methname);
+				ENDIF;
+			ENDIF;
 		ENDIF;
-	    ENDIF;
-	ENDIF;
     ENDFOR;
 }
 
@@ -484,10 +843,10 @@ DECLARE
 	pExec = ProcExec DEFAULT NULL;
 ENDDECLARE
 BEGIN
-	pExec = CurProcedure.Parent;
+	pExec = ProcExec(CurProcedure.Parent);
 	WHILE pExec.Parent IS NOT NULL DO
 		IF pExec.Parent.IsA(class = ProcExec)=TRUE THEN
-			pExec = pExec.Parent;
+			pExec = ProcExec(pExec.Parent);
 		ELSE
 			ENDLOOP;
 		ENDIF;
@@ -538,7 +897,7 @@ END;
 		<script>
 			<![CDATA[METHOD startTest(thetest = Test)=
 {
-    CurObject.fRunTests = CurObject.fRunTests+1;
+    CurObject.TestsRun = CurObject.TestsRun+1;
 }
 
 METHOD AddFailure(thetest = Test, testmethod = varchar(32) not null)=
@@ -565,13 +924,24 @@ ENDDECLARE
     CurObject.Errors[i].error.testmethod = testmethod;
     G_error = NULL;
 }
+
+METHOD AddSkipped(thetest = Test, testmethod = varchar(32) not null)=
+DECLARE
+    i=INTEGER NOT NULL;
+ENDDECLARE
+{
+    i = CurObject.Skipped.LastRow+1;
+    CurObject.Skipped[i].test=thetest;
+    CurObject.Skipped[i].error=G_error;
+    CurObject.Skipped[i].error.testmethod = testmethod;
+    G_error = NULL;
+}
 ]]>
 		</script>
 		<attributes>
 			<row>
-				<displayname>fRunTests</displayname>
+				<displayname>TestsRun</displayname>
 				<datatype>integer</datatype>
-				<isprivate>1</isprivate>
 			</row>
 			<row>
 				<displayname>errors</displayname>
@@ -581,6 +951,12 @@ ENDDECLARE
 			</row>
 			<row>
 				<displayname>failures</displayname>
+				<datatype>testfailure</datatype>
+				<isarray>1</isarray>
+				<isnullable>1</isnullable>
+			</row>
+			<row>
+				<displayname>skipped</displayname>
 				<datatype>testfailure</datatype>
 				<isarray>1</isarray>
 				<isnullable>1</isnullable>
@@ -596,6 +972,9 @@ ENDDECLARE
 			</row>
 			<row>
 				<displayname>addFailure</displayname>
+			</row>
+			<row>
+				<displayname>addSkipped</displayname>
 			</row>
 			<row_class>methodobject</row_class>
 		</methods>
