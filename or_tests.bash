@@ -126,14 +126,26 @@ then
 else
     display_log_file=${TESTDIR}/orunittest.log
 fi
-echo " Using logfile ${display_log_file} ..."
-printf "\n\n"
+printf " Using logfile ${display_log_file} ...\n\n"
 
 cd $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to change into ${TESTDIR}"
 rm -f *.xml
 cp ${SCRIPTDIR}/unittests/* .
 TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests files into test directory ${TESTDIR}"
+
+if [ -z "$OR_UNITTEST_STATSFILE" ]
+then
+	teststats=${TESTDIR}/orunitteststats.log
+else
+	if $cygwin
+	then
+		teststats=`cygpath --unix ${OR_UNITTEST_STATSFILE}`
+	else
+		teststats=${OR_UNITTEST_STATSFILE}
+	fi
+fi
+rm -f ${teststats}
 
 rc=0
 
@@ -210,8 +222,10 @@ do
     fi
 done
 
-echo ''
-echo Detailed log ${display_log_file}
+printf "\nTest Statistics:\n\n"
+cat ${teststats}
+
+printf "\nDetailed log: ${display_log_file}\n"
 
 if [ $rc -ne 0 ]
 then
