@@ -19,7 +19,7 @@
 ================================
 
 The framework is very simple, it consists of:
--	A set of a few (8) user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
+-	A set of a few user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
 -	Two global variables (one to reference the error of the last "Exception", the other to reference the Assert object)
 -	The 4GL procedure "executeTests" that invokes the "run" method on a test class passed
 
@@ -34,7 +34,7 @@ When developing tests for a certain feature the developer has to:
 			  If any assertion is not fulfilled then an error will be "thrown" (like an exception).
 		- You can override setUp() and tearDown() methods if required
 		 (setup will run before any test method, teardown will run after all have completed)
-		- You can skip a test by using the skipTest method (using the G_Assert global variable).
+		- You can skip a test by invoking the skipTest method (using the G_Assert global variable).
 		  This can be done in either the setUp() method (which will skip all tests in the class) or in each test method.
 -	Add other components needed within the test methods
 	(e.g. for the XMLParserCallbacksTests I had to add the callback 4GL procedures and a 4GL procedure that calculates the memory size of the current process)
@@ -649,35 +649,22 @@ end
 )=
 declare
 	result = TestResult;
-	i = integer not null;
+	i = INTEGER not null;
+	t1 = INTEGER not null;
+	t2 = INTEGER not null;
 	e = Error DEFAULT NULL;
-	allok = SMALLINT NOT NULL;
+	resultstr = StringObject;
 enddeclare
 {
 	CurProcedure.Trace(text= 'Running tests from ' + test.ClassName + ' ...');
+	t1 = GetTickCount();
 	test.run(result = result);
-
-	IF result.errors.LastRow>0 OR result.failures.LastRow>0 THEN
-		CurSession.ExitCode=1;
-		IF result.errors.LastRow>0 THEN
-			CurProcedure.Trace(text= '=== Errors ===');
-		ENDIF;
-		FOR i=1 TO result.errors.LastRow DO
-			e = result.errors[i].error;
-			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
-			e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
-		ENDFOR;
-		IF result.failures.LastRow>0 THEN
-			CurProcedure.Trace(text= '=== Failures ===');
-		ENDIF;
-		FOR i=1 TO result.failures.LastRow DO
-			e = result.failures[i].error;
-			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
-			e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
-		ENDFOR;
-	ELSE
-		allok = TRUE;
-	ENDIF;
+	t2 = GetTickCount();
+	
+	resultstr.Value = 
+					test.ClassName +': TestsRun=' + varchar(result.TestsRun) + ', Time_in_ms=' + varchar(t2-t1) +
+					', Failures=' + varchar(result.failures.LastRow) + ', Errors=' + varchar(result.errors.LastRow)+ 
+					', Skipped=' + varchar(result.skipped.LastRow) + HC_NEWLINE;  
 
 	IF result.skipped.LastRow>0 THEN
 		CurSession.ExitCode=-1;
@@ -691,10 +678,29 @@ enddeclare
 		ENDFOR;		
 	ENDIF;
 
-	IF allok=TRUE THEN
-		CurProcedure.Trace(text= '=== All tests were successful. ===');
+	IF result.errors.LastRow>0 OR result.failures.LastRow>0 THEN
+		CurSession.ExitCode=1;
+		IF result.errors.LastRow>0 THEN
+			CurProcedure.Trace(text= '=== Errors ===');
+		ENDIF;
+		FOR i=1 TO result.errors.LastRow DO
+			e = result.errors[i].error;
+			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+			HC_NEWLINE +  e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+		ENDFOR;
+		IF result.failures.LastRow>0 THEN
+			CurProcedure.Trace(text= '=== Failures ===');
+		ENDIF;
+		FOR i=1 TO result.failures.LastRow DO
+			e = result.failures[i].error;
+			CurProcedure.Trace(text= e.testmethod + ' ' + e.errorexec + ' (line '+varchar(e.errorline)+'): ' +
+			HC_NEWLINE + e.ClassName + HC_NEWLINE + HC_TAB + e.errortext);
+		ENDFOR;
 	ENDIF;
-	CurProcedure.Trace(text= 'Finished running tests.');
+
+	resultstr.AppendToFile(filename=G_Helper.TestStatsFile);
+	CurProcedure.Trace(text='======================================================================' + HC_NEWLINE +
+		resultstr.Value + '======================================================================');
 }
 ]]>
 		</script>
@@ -705,9 +711,270 @@ enddeclare
 	<COMPONENT name="G_Error" xsi:type="globsource">
 		<datatype>error</datatype>
 	</COMPONENT>
+	<COMPONENT name="G_Helper" xsi:type="globsource">
+		<datatype>helper</datatype>
+	</COMPONENT>
 	<COMPONENT name="GetTickCount" xsi:type="proc3glsource">
 		<datatype>integer</datatype>
 		<libraryname>kernel32.dll</libraryname>
+	</COMPONENT>
+	<COMPONENT name="Helper" xsi:type="classsource">
+		<versshortremarks>
+			<![CDATA[Helper functionality for tests]]>
+		</versshortremarks>
+		<superclass>userobject</superclass>
+		<script>
+			<![CDATA[INITIALIZE=
+DECLARE
+	testdir = VARCHAR(256) NOT NULL;
+	tmpdir = VARCHAR(256) NOT NULL;
+	deleteFile = PROCEDURE;
+	teststatsfile = VARCHAR(256) NOT NULL;
+ENDDECLARE
+{
+	IF CurSession.OperatingSystem=SY_UNIX THEN
+		CurObject.DirectorySeparator = '\';
+	ENDIF;
+
+	testdir = CurSession.GetEnv(name = 'TESTDIR');
+	IF testdir = '' THEN
+		testdir = CurSession.WorkingDirectory;
+	ENDIF;
+	CurObject.TestDir = testdir;
+
+	teststatsfile = CurSession.GetEnv(name = 'OR_UNITTEST_STATSFILE');
+	IF teststatsfile = '' THEN
+		teststatsfile = testdir + CurObject.DirectorySeparator + 'orunitteststats.log';
+	ENDIF;
+	CurObject.TestStatsFile = teststatsfile;
+
+	tmpdir = CurSession.GetEnv(name = 'OR_UNITTEST_TMPDIR');
+	IF tmpdir='' THEN
+		IF CurSession.DirectoryExists(directory=testdir + CurObject.DirectorySeparator + 'temp')=TRUE THEN
+			tmpdir = testdir + CurObject.DirectorySeparator + 'temp';
+		ELSEIF CurSession.DirectoryExists(directory='testtemp')=TRUE THEN
+			tmpdir = CurSession.WorkingDirectory + CurObject.DirectorySeparator + 'testtemp';
+		ENDIF;
+		IF tmpdir='' THEN
+			tmpdir = CurSession.GetEnv(name = 'II_TEMPORARY');
+			IF tmpdir='' THEN
+				tmpdir = CurSession.GetEnv(name = 'TMPDIR');
+				IF tmpdir='' THEN
+					tmpdir = CurSession.GetEnv(name = 'TEMP');
+					IF tmpdir='' THEN
+						tmpdir = CurSession.GetEnv(name = 'TMP');
+						IF tmpdir='' THEN
+							IF CurSession.OperatingSystem=SY_UNIX THEN
+								IF CurSession.DirectoryExists(directory='/tmp')=TRUE THEN
+									tmpdir = '/tmp';
+								ELSEIF CurSession.DirectoryExists(directory='/var/tmp')=TRUE THEN
+									tmpdir = '/var/tmp';
+								ELSEIF CurSession.DirectoryExists(directory='/usr/tmp')=TRUE THEN
+									tmpdir = '/usr/tmp';
+								ENDIF;
+							ELSE
+								IF CurSession.DirectoryExists(directory='C:\TEMP')=TRUE THEN
+									tmpdir = 'C:\TEMP';
+								ELSEIF CurSession.DirectoryExists(directory='C:\TMP')=TRUE THEN
+									tmpdir = 'C:\TMP';
+								ELSEIF CurSession.DirectoryExists(directory='\TEMP')=TRUE THEN
+									tmpdir = '\TMP';
+								ELSEIF CurSession.DirectoryExists(directory='\TEMP')=TRUE THEN
+									tmpdir = '\TMP';
+								ENDIF;
+							ENDIF;
+						ENDIF;
+					ENDIF;
+				ENDIF;
+			ENDIF;
+		ENDIF;
+	ENDIF;
+	IF tmpdir='' THEN
+		CurObject.TempDir = CurSession.WorkingDirectory;
+	ELSE
+		CurObject.TempDir = tmpdir;
+	ENDIF;
+
+	tmpdir = CurSession.GetEnv(name = 'OR_UNITTEST_RESOURCEDIR');
+	IF tmpdir='' THEN
+		IF CurSession.DirectoryExists(directory=testdir + CurObject.DirectorySeparator + 'resources')=TRUE THEN
+			tmpdir = testdir + CurObject.DirectorySeparator + 'resources';
+		ENDIF;
+		IF tmpdir='' THEN
+			IF CurSession.DirectoryExists(directory='resources')=TRUE THEN
+				tmpdir = CurSession.WorkingDirectory + CurObject.DirectorySeparator + 'resources';
+			ENDIF;
+		ENDIF;
+	ENDIF;
+	IF tmpdir='' THEN
+		CurObject.ResourceDir = CurObject.TempDir;
+	ELSE
+		CurObject.ResourceDir = tmpdir;
+	ENDIF;
+
+	CurExec.Trace(text='WorkingDirectory=' + CurSession.WorkingDirectory);
+	CurExec.Trace(text='TestDir=' + CurObject.TestDir);
+	CurExec.Trace(text='TempDir=' + CurObject.TempDir);
+	CurExec.Trace(text='ResourceDir=' + CurObject.ResourceDir);
+}
+
+METHOD LocalFilename(
+	filename= VARCHAR(256) NOT NULL // OS-independent filename containing !
+)=
+DECLARE
+	fname = VARCHAR(256) NOT NULL;
+	lname = VARCHAR(256) NOT NULL;
+	pos=integer NOT NULL;
+	i = INTEGER NOT NULL;
+	ln = INTEGER NOT NULL;
+ENDDECLARE
+{
+    fname = filename;
+	ln = LENGTH(fname);
+	pos = LOCATE(fname, '!');
+	WHILE pos<=ln DO
+		lname = lname + LEFT(fname, pos) + CurObject.DirectorySeparator;
+		fname = SHIFT(fname, -pos);
+		pos = LOCATE(fname, '!');
+	ENDWHILE;
+	lname = lname + fname;
+	RETURN lname;
+}
+
+METHOD GetResourceFilePath(
+	filename= VARCHAR(256) NOT NULL
+)=
+{
+	RETURN CurObject.ResourceDir + CurObject.DirectorySeparator + CurObject.LocalFilename(filename=filename);
+}
+
+
+METHOD GetTempFilePath(
+	filename = VARCHAR(256) NOT NULL,
+	register_name = SMALLINT NOT NULL
+)=
+DECLARE
+	lname = VARCHAR(256) NOT NULL;
+	str = StringObject DEFAULT NULL;
+ENDDECLARE
+{
+	lname = CurObject.TempDir + CurObject.DirectorySeparator + CurObject.LocalFilename(filename=filename);
+	IF register_name = TRUE THEN
+		str = StringObject.Create();
+		str.Value = lname;
+		CurObject.htTempFiles.InsertObject(key = filename, object = str);
+	ENDIF;
+	RETURN lname;
+}
+
+METHOD RemoveRegisteredTempFile(
+	filename = VARCHAR(256) NOT NULL
+)=
+DECLARE
+	str = StringObject DEFAULT NULL;
+	i = INTEGER NOT NULL;
+ENDDECLARE
+{
+	str = StringObject(CurObject.htTempFiles.Find(key=filename));
+	IF str IS NOT NULL THEN
+		CALLPROC deleteFile(filename = str.Value);
+		CurObject.htTempFiles.RemoveObject(key=filename);
+	ENDIF;
+}
+
+METHOD RemoveRegisteredTempFiles()=
+DECLARE
+	arr = ARRAY OF HashTableEntry DEFAULT NULL;
+	i = INTEGER NOT NULL;
+ENDDECLARE
+{
+	arr = CurObject.htTempFiles.Entries;
+	FOR i=arr.LastRow DOWNTO 1 DO
+		CALLPROC deleteFile(filename = StringObject(arr[i].object).Value);
+	ENDFOR;
+	arr.Clear();
+}
+
+PROCEDURE deleteFile(
+	filename= VARCHAR(256) NOT NULL
+)=
+DECLARE
+	procwin = INTEGER NOT NULL;
+	procwait = INTEGER NOT NULL;
+	cmd = VARCHAR(2000) NOT NULL;
+ENDDECLARE
+{
+	procwin = CurSession.ProcessWindow;
+	procwait = CurSession.ProcessWait;
+	CurSession.ProcessWindow = FALSE;
+	CurSession.ProcessWait = TRUE;
+	IF CurSession.OperatingSystem=SY_UNIX THEN
+		cmd = 'rm -f '+filename;
+	ELSE
+		cmd = 'cmd /c del /f "'+filename+'"';
+	ENDIF;
+	CALL SYSTEM :cmd;
+	CurSession.ProcessWindow = procwin;
+	CurSession.ProcessWait = procwait;
+}
+
+
+
+]]>
+		</script>
+		<attributes>
+			<row>
+				<displayname>DirectorySeparator</displayname>
+				<datatype>varchar(1)</datatype>
+				<defaultvalue>3</defaultvalue>
+				<defaultstring>
+					<![CDATA[\]]>
+				</defaultstring>
+			</row>
+			<row>
+				<displayname>TempDir</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>htTempFiles</displayname>
+				<datatype>stringhashtable</datatype>
+				<isnullable>1</isnullable>
+			</row>
+			<row>
+				<displayname>ResourceDir</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>TestDir</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>TestStatsFile</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+		<methods>
+			<row>
+				<displayname>LocalFilename</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>GetResourceFilePath</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>GetTempFilePath</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>RemoveRegisteredTempFiles</displayname>
+			</row>
+			<row>
+				<displayname>RemoveRegisteredTempFile</displayname>
+			</row>
+			<row_class>methodobject</row_class>
+		</methods>
 	</COMPONENT>
 	<COMPONENT name="runtests" xsi:type="proc4glsource">
 		<script>
@@ -776,20 +1043,27 @@ METHOD run(result=TestResult DEFAULT NULL)=
 	IF (result IS NULL) THEN
 		result = TestResult.Create();
 	ENDIF;
-    result.StartTest(thetest=CurObject);
+
 	IF CurMethod.SetExitTrap()=ER_OK THEN
-	// try
+		// try
+		result.StartTest(thetest=CurObject);
+		CurMethod.Trace(text = 'Running setUp');
 		CurObject.setUp();
+		CurMethod.Trace(text = HC_TAB + '(OK)');
 	ELSE // catch
 		IF G_Error.IsA(class=SkippedTest)=TRUE THEN
 			result.AddSkipped(thetest=CurObject, testmethod='setUp');
+			CurMethod.Trace(text = HC_TAB + '(SKIPPED)');
 		ELSEIF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
 			result.AddFailure(thetest=CurObject, testmethod='setUp');
+			CurMethod.Trace(text = HC_TAB + '(FAILED)');
 		ELSE
 			result.AddError(thetest=CurObject, testmethod='setUp');
+			CurMethod.Trace(text = HC_TAB + '(ERROR)');
 		ENDIF;
 		RETURN;
 	ENDIF;
+
     CurObject.runTest(result=result); 
     CurObject.tearDown();
 }
@@ -798,9 +1072,11 @@ METHOD runTest(result=TestResult DEFAULT NULL)=
 DECLARE
     cs = ClassSource DEFAULT NULL;
     i = INTEGER NOT NULL;
+    k = INTEGER NOT NULL;
     methname = VARCHAR(32) NOT NULL;
     ucl = UserClassObject DEFAULT NULL;
     appsrc = AppSource DEFAULT NULL;
+    marr = ARRAY OF StringObject;
 ENDDECLARE
 {
     ucl = UserClassObject(CurObject.Class);
@@ -813,18 +1089,29 @@ ENDDECLARE
     FOR i=1 TO cs.Methods.LastRow DO
 		methname = cs.Methods[i].Name;
 		IF LOWERCASE(LEFT(methname, 4))='test' THEN
-			CurMethod.Trace(text = 'Running ' + cs.Name+'!'+methname);
-			IF CurMethod.SetExitTrap()=ER_OK THEN
+			k=k+1;
+			marr[k].Value = methname;
+		ENDIF;
+    ENDFOR;
+	marr.Sort(value = AS_ASC);
+    FOR i=1 TO k DO
+		methname = marr[i].Value;
+		CurMethod.Trace(text = 'Running method ' + methname);
+		IF CurMethod.SetExitTrap()=ER_OK THEN
 			// try
+			result.TestsRun=result.TestsRun+1;
 			CurObject.:methname();
-			ELSE // catch
-				IF G_Error.IsA(class=SkippedTest)=TRUE THEN
-					result.AddSkipped(thetest=CurObject, testmethod=methname);
-				ELSEIF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
-					result.AddFailure(thetest=CurObject, testmethod=methname);
-				ELSE
-					result.AddError(thetest=CurObject, testmethod=methname);
-				ENDIF;
+			CurMethod.Trace(text = HC_TAB + '(OK)');
+		ELSE // catch
+			IF G_Error.IsA(class=SkippedTest)=TRUE THEN
+				result.AddSkipped(thetest=CurObject, testmethod=methname);
+				CurMethod.Trace(text = HC_TAB + '(SKIPPED)');
+			ELSEIF G_Error.IsA(class=AssertionFailedError)=TRUE THEN
+				result.AddFailure(thetest=CurObject, testmethod=methname);
+				CurMethod.Trace(text = HC_TAB + '(FAILED)');
+			ELSE
+				result.AddError(thetest=CurObject, testmethod=methname);
+				CurMethod.Trace(text = HC_TAB + '(ERROR)');
 			ENDIF;
 		ENDIF;
     ENDFOR;
