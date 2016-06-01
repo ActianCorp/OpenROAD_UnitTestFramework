@@ -203,7 +203,7 @@ do
         fi
 
         ${runcmd}
-		rv2 = $?
+		rv2=$?
         if [ $rv2 -eq 0 ]
         then
             printf "OK.\n"
