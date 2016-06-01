@@ -733,7 +733,7 @@ DECLARE
 ENDDECLARE
 {
 	IF CurSession.OperatingSystem=SY_UNIX THEN
-		CurObject.DirectorySeparator = '\';
+		CurObject.DirectorySeparator = '/';
 	ENDIF;
 
 	testdir = CurSession.GetEnv(name = 'TESTDIR');
