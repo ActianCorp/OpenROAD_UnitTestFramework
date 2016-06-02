@@ -667,7 +667,7 @@ enddeclare
 					', Skipped=' + varchar(result.skipped.LastRow) + HC_NEWLINE;  
 
 	IF result.skipped.LastRow>0 THEN
-		CurSession.ExitCode=-1;
+		CurSession.ExitCode=2;
 		IF result.skipped.LastRow>0 THEN
 			CurProcedure.Trace(text= '=== Skipped Tests ===');
 		ENDIF;

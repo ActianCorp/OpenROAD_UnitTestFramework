@@ -208,7 +208,7 @@ do
         then
             printf "OK.\n"
         else
-			if [ $rv2 -eq -1 ]
+			if [ $rv2 -eq 2 ]
 			then
 				printf "OK (Some/or all tests have been SKIPPED).\n"
 			else
