@@ -736,7 +736,7 @@ ENDDECLARE
 		CurObject.DirectorySeparator = '/';
 	ENDIF;
 
-	testdir = CurSession.GetEnv(name = 'TESTDIR');
+	testdir = CurSession.GetEnv(name = 'OR_UNITTEST_TESTDIR');
 	IF testdir = '' THEN
 		testdir = CurSession.WorkingDirectory;
 	ENDIF;
