@@ -126,12 +126,12 @@ then
 else
     display_log_file=${TESTDIR}/orunittest.log
 fi
-printf " Using logfile ${display_log_file} ...\n\n"
+printf " Using logfile %s ...\n\n" ${display_log_file}
 
 cd $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to change into ${TESTDIR}"
 rm -f *.xml
-cp ${SCRIPTDIR}/unittests/* .
+cp -r ${SCRIPTDIR}/unittests/* .
 TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests files into test directory ${TESTDIR}"
 
 if [ -z "$OR_UNITTEST_STATSFILE" ]
@@ -225,7 +225,7 @@ done
 printf "\nTest Statistics:\n\n"
 cat ${teststats}
 
-printf "\nDetailed log: ${display_log_file}\n"
+printf "\nDetailed log: %s\n" ${display_log_file}
 
 if [ $rc -ne 0 ]
 then
