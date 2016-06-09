@@ -177,7 +177,7 @@ do
         makeimageflags=""
         if [ -f ${utapp}.cfg ]
         then
-            runner=`grep "^RUNNER=" ${utapp}.cfg | cut -f2 -d'='`
+            runner=`grep "^RUNNER=" ${utapp}.cfg | cut -f2 -d'=' | xargs echo -n`
             runflags=`grep "^RUNFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
             makeimageflags=`grep "^MAKEIMAGEFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
         fi
