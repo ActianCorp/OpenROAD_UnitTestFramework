@@ -175,13 +175,20 @@ do
         runner=""
         runflags=""
         makeimageflags=""
+        runtimeout=""
+
         if [ -f ${utapp}.cfg ]
         then
-            runner=`grep "^RUNNER=" ${utapp}.cfg | cut -f2 -d'=' | xargs echo -n`
-            runflags=`grep "^RUNFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
-            makeimageflags=`grep "^MAKEIMAGEFLAGS=" ${utapp}.cfg | cut -f2 -d'='`
+            runner=`grep "^RUNNER=" ${utapp}.cfg | cut -f2 -d'=' | tr -d $'\r'`
+            runflags=`grep "^RUNFLAGS=" ${utapp}.cfg | cut -f2 -d'=' | tr -d $'\r'`
+            makeimageflags=`grep "^MAKEIMAGEFLAGS=" ${utapp}.cfg | cut -f2 -d'=' | tr -d $'\r'`
+            runtimeout=`grep "^RUNTIMEOUT=" ${utapp}.cfg | cut -f2 -d'=' | tr -d $'\r'`
         fi
 
+        if [ -z "$runtimeout" ]
+        then
+	        runtimeout=300
+        fi
         if [ -z "$runner" ]
         then
             runcmd="w4gldev rundbapp ${TESTDB} $utapp -nowindows -Lorunittest.log -Tyes,logonly -A ${runflags}"
@@ -202,8 +209,8 @@ do
             fi
         fi
 
-        ${runcmd}
-		rv2=$?
+        bash ${SCRIPTDIR}/timeout_cmd.bash ${runtimeout} ${runcmd}
+        rv2=$?
         if [ $rv2 -eq 0 ]
         then
             printf "OK.\n"
@@ -212,7 +219,12 @@ do
 			then
 				printf "OK (Some/or all tests have been SKIPPED).\n"
 			else
-				printf "FAILED.\n"
+				if [ $rv2 -eq 124 ]
+				then
+					printf "FAILED (due to timeout after ${runtimeout} seconds).\n"
+				else
+					printf "FAILED.\n"
+				fi
 				((rc++))
 			fi
         fi
