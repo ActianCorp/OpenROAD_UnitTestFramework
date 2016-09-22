@@ -159,6 +159,15 @@ fi
 for utxml in $(ls *.xml | grep -v "^UnitTestFramework\.xml" | grep -v "^UnitTestRunner\.xml" | sort)
 do
     utapp=$(basename $utxml .xml)
+#   remove any locks for this app, as they would prevent importing
+    tm -S ${TESTDB} <<EOF
+\sql
+DELETE FROM ii_locks WHERE entity_id IN (SELECT entity_id FROM ii_entities WHERE folder_id IN
+(SELECT entity_id FROM ii_entities WHERE entity_type='appsource' AND lowercase(entity_name)=lowercase('${utapp}')));
+DELETE FROM ii_locks WHERE entity_id IN (SELECT entity_id FROM ii_entities WHERE entity_type='appsource' AND lowercase(entity_name)=lowercase('${utapp}'));
+COMMIT;\g\q
+EOF
+
     w4gldev backupapp in ${TESTDB} $utapp $utxml -nreplace -xml -nowindows -Lorunittest.log -Tyes,logonly -A
     rv1=$?
     if [ $rv1 -eq 0 ]
