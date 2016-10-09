@@ -218,6 +218,24 @@ usually to compare an actual value with an expected value:
 * assertNull()
 * assertSame()
 
+### Helper attributes and methods
+
+The Helper class (available via the G_Helper global variable) provides useful attributes and methods that can be used within the test methods:
+
+Attribute | Explanation
+--------- | -----------
+DirectorySeparator | The OS specific directory separator
+ResourceDir | The directory containing resource files - see description of the OR_UNITTEST_RESOURCEDIR environment variable
+TempDir | The directory containing temporary files - see description of the OR_UNITTEST_TMPDIR environment variable
+TestDir | The directory containing test files - see description of the OR_UNITTEST_TESTDIR environment variable
+TestStatsFile | The file test statistics will be written to - see description of the OR_UNITTEST_STATSFILE environment variable
+
+Method              | Explanation
+------------------- | -----------
+GetResourceFilePath | Returns a file path in the ResourceDir created from a `filename` in portable format (using "!" directory separator)
+GetTempFilePath     | Returns a file path in the TempDir created from a `filename` in portable format (using "!" directory separator); optional `register_name` parameter specifies if the filename should be registered for automatic deletion (after running the tests)
+LocalFilename       | Returns a file name in local (OS specific) format created from a `filename` in portable format (using "!" directory separator)
+
 ## Terms of use
 
 See the LICENSE file.
