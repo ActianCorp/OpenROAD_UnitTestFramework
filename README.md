@@ -31,10 +31,10 @@ Note that you will have to do this before you can run the examples that are prov
 
 The framework is very simple, it consists of:
 
-  * A set of a few user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
+  * A set of user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
   * A set of global variables (one to reference the error of the last "Exception", one to reference the Assert object providing assertion methods, one providing Helper functionally)
   * The 4GL procedure "executeTests" that invokes the "run" method on a TestClass subclass object passed to the "test" parameter, and prints out test results and statistics/timings
-  * The 3GL Procedure GetTickCount - used for timing calculation
+  * The 3GL Procedure GetTickCount() - used for timing calculation
 
 ### Environment variables used by the OpenROAD UnitTest Framework
 
@@ -59,7 +59,7 @@ The basic building blocks of unit testing are "test cases", which represent scen
 
 An instance of a TestCase class is an object that can run test methods, together with optional set-up and tidy-up code.
 
-The testing code of a TestCase instance should be entirely self contained, such that it can be run either in isolation or in arbitrary combination with any number of other test cases.
+The testing code of a TestCase instance should be entirely self contained and [idempotent](https://en.wikipedia.org/wiki/Idempotence), such that it can be run either in isolation or in arbitrary combination with any number of other test cases.
 
 ### Creating a simple test case
 
@@ -102,7 +102,7 @@ The testing code of a TestCase instance should be entirely self contained, such 
 
 Now, such test cases can be numerous, and their set-up can be repetitive.
 
-In order to prevent duplication such set-up code can be factored out by overriding a method called setUp, which the testing framework will automatically invoke before the test method(s) run.
+In order to prevent duplication such set-up code can be factored out by overriding a method called `setUp()`, which the testing framework will automatically invoke before the test method(s) run.
 Similarly, tear-down code can be factored out by overriding a method called tearDown, which the testing framework will automatically invoke after all test method(s) ran in order to tidy-up.
 
 Example script:
@@ -134,12 +134,12 @@ The methods are invoked in alphabetical order (case-insensitive).
 ### Applications with several test classes
 
 When having multiple test classes in a test application,
-they can all be executed by adding a call to `executeTests` for each of them within the in the `runtests` procedure.
+they can all be executed by adding a call to `executeTests()` for each of them within the in the `runtests()` procedure.
 
 ### Skipping tests
 
-A test can be skipped by invoking the `skipTest` method (using the G_Assert global variable).
-This can be done in either the setUp() method (which will skip all tests in the class) or in each test method.
+A test can be skipped by invoking the `skipTest()` method (using the G_Assert global variable).
+This can be done in either the `setUp()` method (which will skip all tests in the class) or in each test method.
 
 Example script:
 
@@ -171,9 +171,11 @@ Test results (status, timings, etc.) are logged in the log file (and trace windo
 You can also run the application from command line and test the return status of the application.
 The exit codes have the following meaning:
 
-* 0 success
-* 1 error/failure
-* 2 Skipped tests (but otherwise ok)
+Code | Explanation
+---- | -----------
+0 | Success (OK)
+1 | Error/failure
+2 | Skipped tests (but otherwise ok)
 
 ### Running tests interactively
 
