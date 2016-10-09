@@ -103,7 +103,7 @@ The testing code of a TestCase instance should be entirely self contained and [i
 Now, such test cases can be numerous, and their set-up can be repetitive.
 
 In order to prevent duplication such set-up code can be factored out by overriding a method called `setUp()`, which the testing framework will automatically invoke before the test method(s) run.
-Similarly, tear-down code can be factored out by overriding a method called tearDown, which the testing framework will automatically invoke after all test method(s) ran in order to tidy-up.
+Similarly, tear-down code can be factored out by overriding a method called `tearDown()`, which the testing framework will automatically invoke after all test method(s) ran in order to tidy-up.
 
 Example script:
 ```
