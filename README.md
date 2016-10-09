@@ -188,14 +188,38 @@ In order to run tests from the command line you can use the following command:
 w4gldev rundbapp _database testapplication_ -Llogfile -Tyes
 
 There is also a script file `or_tests.bash` (and wrapper batch script `or_tests.bat` for Windows calling `or_tests.bash`),
-which will execute all test case applications which have been placed as XML export files in the `unitests` subdirectory.
-This script will import the UnitTestFramework application from the 'UnitTestFramework.xml' file before importing and executing other test applications in the `unitests` subdirectory.
+which will execute all test case applications which have been placed as XML export files in the `unittests` subdirectory.
+This script will import the UnitTestFramework application from the 'UnitTestFramework.xml' file before importing and executing other test applications in the `unittests` subdirectory.
 
 Usage:    bash or_tests.bash _testdatabase_
 
 The script will also print out the test results to the console.
 
-### Configuring test runs using or_tests.bash
+### Configuring tests run by or_tests.bash
+
+There are configuration options for tests that are run automated by using or_tests.bash script described above.
+
+#### Ignoring tests
+
+If there is a file called `ignore_apps.lst` in the `unittests` subdirectory, then the applications listed in this file will be ignored.
+That is, the _application_ will not be executed.
+These tests will be indicated with an `IGNORED` status in the output of or_tests.bash.
+
+#### Configuring tests
+
+Tests for an application can be configured using an optional _application_.cfg file in the `unittests` subdirectory.
+The file can contain lines in the format
+
+OPTION=value
+
+with the following meaning:
+
+OPTION | Explanation
+------ | -----------
+RUNNER | Specifies the command used to execute the test application after importing. This could also be a (batch) script. Default: `w4gldev rundbapp ...`; If set to `runimage` the application will be imaged using makeimage before running using "w4gldev rundbapp"
+RUNTIMEOUT | Specifies the timeout period in secs when running the test application - default value: 300. After the timeout period the process running the test will be aborted.
+RUNFLAGS | Specifies additional command line flags passed to the RUNNER.
+MAKEIMAGEFLAGS | Specifies additional flags used by the makeimage command, if RUNNER is set to `runimage`.
 
 ### The GUI test runner
 
