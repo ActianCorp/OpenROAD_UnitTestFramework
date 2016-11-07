@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<!-- Copyright (c) 2016 Actian Corporation. All Rights Reserved.-->
-	<APPLICATION name="unittestframework">
+	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
 				<appname>core</appname>
@@ -728,7 +728,6 @@ enddeclare
 DECLARE
 	testdir = VARCHAR(256) NOT NULL;
 	tmpdir = VARCHAR(256) NOT NULL;
-	deleteFile = PROCEDURE;
 	teststatsfile = VARCHAR(256) NOT NULL;
 ENDDECLARE
 {
@@ -833,7 +832,7 @@ ENDDECLARE
 	ln = LENGTH(fname);
 	pos = LOCATE(fname, '!');
 	WHILE pos<=ln DO
-		lname = lname + LEFT(fname, pos) + CurObject.DirectorySeparator;
+		lname = lname + LEFT(fname, pos-1) + CurObject.DirectorySeparator;
 		fname = SHIFT(fname, -pos);
 		pos = LOCATE(fname, '!');
 	ENDWHILE;
@@ -877,7 +876,7 @@ ENDDECLARE
 {
 	str = StringObject(CurObject.htTempFiles.Find(key=filename));
 	IF str IS NOT NULL THEN
-		CALLPROC deleteFile(filename = str.Value);
+		CurObject.RemoveFile(filename = str.Value);
 		CurObject.htTempFiles.RemoveObject(key=filename);
 	ENDIF;
 }
@@ -890,12 +889,12 @@ ENDDECLARE
 {
 	arr = CurObject.htTempFiles.Entries;
 	FOR i=arr.LastRow DOWNTO 1 DO
-		CALLPROC deleteFile(filename = StringObject(arr[i].object).Value);
+		CurObject.RemoveFile(filename = StringObject(arr[i].object).Value);
 	ENDFOR;
 	arr.Clear();
 }
 
-PROCEDURE deleteFile(
+METHOD RemoveFile(
 	filename= VARCHAR(256) NOT NULL
 )=
 DECLARE
@@ -908,6 +907,10 @@ ENDDECLARE
 	procwait = CurSession.ProcessWait;
 	CurSession.ProcessWindow = FALSE;
 	CurSession.ProcessWait = TRUE;
+	IF CurSession.FileExists(filename=filename)=FALSE THEN
+		CurExec.Trace(text = 'File "'+filename+'" does not exist, cannot remove!');
+		RETURN ER_FAIL;
+	ENDIF;
 	IF CurSession.OperatingSystem=SY_UNIX THEN
 		cmd = 'rm -f '+filename;
 	ELSE
@@ -916,6 +919,10 @@ ENDDECLARE
 	CALL SYSTEM :cmd;
 	CurSession.ProcessWindow = procwin;
 	CurSession.ProcessWait = procwait;
+	IF CurSession.FileExists(filename=filename)=TRUE THEN
+		CurExec.Trace(text = 'Removal of file "'+filename+'" failed!');
+		RETURN ER_FAIL;
+	ENDIF;
 }
 
 
@@ -972,6 +979,10 @@ ENDDECLARE
 			</row>
 			<row>
 				<displayname>RemoveRegisteredTempFile</displayname>
+			</row>
+			<row>
+				<displayname>RemoveFile</displayname>
+				<datatype>integer</datatype>
 			</row>
 			<row_class>methodobject</row_class>
 		</methods>

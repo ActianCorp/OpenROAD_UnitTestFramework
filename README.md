@@ -257,8 +257,11 @@ TestStatsFile | The file test statistics will be written to - see description of
 Method              | Explanation
 ------------------- | -----------
 GetResourceFilePath | Returns a file path in the ResourceDir created from a `filename` in portable format (using "!" directory separator)
-GetTempFilePath     | Returns a file path in the TempDir created from a `filename` in portable format (using "!" directory separator); optional `register_name` parameter specifies if the filename should be registered for automatic deletion (after running the tests)
+GetTempFilePath     | Returns a file path in the TempDir created from a `filename` in portable format (using "!" directory separator); optional `register_name` parameter specifies if the filename should be registered for deletion using RemoveRegisteredTempFile() or RemoveRegisteredTempFiles()
 LocalFilename       | Returns a file name in local (OS specific) format created from a `filename` in portable format (using "!" directory separator)
+RemoveFile          | Removes file with the given `filename` in local (OS specific) format
+RemoveRegisteredTempFile | Removes registered file with `filename` in portable format
+RemoveRegisteredTempFiles | Removes all registered files
 
 ## Terms of use
 
