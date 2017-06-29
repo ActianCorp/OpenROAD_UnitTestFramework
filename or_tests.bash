@@ -94,7 +94,6 @@ export TESTDIR=$SCRIPTDIR/tests/test${TESTNO}
 echo '\q' | tm -S $TESTDB
 TEST_CHECKCMD $? 0 "Y" "Unable to connect to ${TESTDB}"
 
-chmod 644 *.xml unittests/*.xml
 mkdir -p $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to create test directory $TESTDIR"
 
