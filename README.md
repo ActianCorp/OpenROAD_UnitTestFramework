@@ -32,26 +32,29 @@ Note that you will have to do this before you can run the examples that are prov
 The framework is very simple, it consists of:
 
   * A set of user classes similar to JUnit (Test, TestCase, Assert, Error, etc.)
-  * A set of global variables (one to reference the error of the last "Exception", one to reference the Assert object providing assertion methods, one providing Helper functionally)
-  * The 4GL procedure "executeTests" that invokes the "run" method on a TestClass subclass object passed to the "test" parameter, and prints out test results and statistics/timings
+  * A set of global variables (G_Error to reference the error of the last "Exception", G_Assert to reference the Assert object providing assertion methods, G_Helper to provide Helper functionally)
+  * The TestRunnerGhost frame, that invokes the "run" method on the test suite referenced in an attribute of the Helper object (G_Helper global variable), and writes out test results and statistics/timings.
+  * The 4GL procedure "executeTests" that adds a test to the test suite in the Helper object, which will start the TestRunnerGhost frame (as independent thread).
   * The 3GL Procedure GetTickCount() - used for timing calculation
 
 ### Environment variables used by the OpenROAD UnitTest Framework
 
 The following environment variables are used when running tests using the framework:
 
-  * OR_UNITTEST_TESTDIR Specifies a directory used for testing input/output. If not set it defaults to the current working directory. This directory must be writeable by the user.
-  * OR_UNITTEST_STATSFILE Specifies the file (including path) the test statistics will be written to. If not set it defaults to `orunitteststats.log` in the directory specified by the OR_UNITTEST_TESTDIR environment variable.
-  * OR_UNITTEST_TMPDIR Specifies a directory used for temporary files used by the test cases. If not set it defaults to to a directory named `temp` in the directory specified by the OR_UNITTEST_TESTDIR environment variable.
+  * `OR_UNITTEST_TESTDIR` Specifies a directory used for testing input/output. If not set it defaults to the current working directory. This directory must be writeable by the user.
+  * `OR_UNITTEST_GEN_XML_STATS` Specifies if test statistics should be written in JUnit XML format. Valid values TRUE and FALSE (default).
+  * `OR_UNITTEST_STATSFILE` Specifies the file (including path) the test statistics will be written to. If not set it defaults to `orunitteststats.log` in the directory specified by the `OR_UNITTEST_TESTDIR` environment variable.
+  * `OR_UNITTEST_STATSFILE_XML` Specifies the file (including path) the XML test statistics will be written to. If not set it defaults to `orunitteststats.xml` in the directory specified by the `OR_UNITTEST_TESTDIR` environment variable. It is only used if `OR_UNITTEST_GEN_XML_STATS=TRUE`.
+  * `OR_UNITTEST_TMPDIR` Specifies a directory used for temporary files used by the test cases. If not set it defaults to to a directory named `temp` in the directory specified by the `OR_UNITTEST_TESTDIR` environment variable.
   If this does not exist, a `testtemp` directory in the current working directory will be used.
-  If this doesn't exist either, the following envronment variables will be checked (in this order): II_TEMPORARY, TMPDIR, TEMP, TMP.
+  If this doesn't exist either, the following envronment variables will be checked (in this order): `II_TEMPORARY`, `TMPDIR`, `TEMP`, `TMP`.
   If they are not set the following directories are checked (in this order):
   On Unix: `/tmp`, `/var/tmp`, `/usr/tmp`
   On Windows: `C:\TEMP`, `C:\TMP`, the `TEMP` and `TMP` directories under the current working directory
   If none of the above exists, then the current working directory will be used.
-  * OR_UNITTEST_RESOURCEDIR Specifies a directory containing additional resources (files) used for the tests. If not set it defaults to to a directory named `resources` in the directory specified by the OR_UNITTEST_TESTDIR environment variable.
+  * `OR_UNITTEST_RESOURCEDIR` Specifies a directory containing additional resources (files) used for the tests. If not set it defaults to to a directory named `resources` in the directory specified by the `OR_UNITTEST_TESTDIR` environment variable.
   If this does not exist, a `resources` directory in the current working directory will be used.
-  If this doesn't exist either, the temporary directory (see OR_UNITTEST_TMPDIR above) will be used.
+  If this doesn't exist either, the temporary directory (see `OR_UNITTEST_TMPDIR` above) will be used.
 
 ### Test Cases
 
@@ -249,10 +252,11 @@ The Helper class (available via the G_Helper global variable) provides useful at
 Attribute | Explanation
 --------- | -----------
 DirectorySeparator | The OS specific directory separator
-ResourceDir | The directory containing resource files - see description of the OR_UNITTEST_RESOURCEDIR environment variable
-TempDir | The directory containing temporary files - see description of the OR_UNITTEST_TMPDIR environment variable
-TestDir | The directory containing test files - see description of the OR_UNITTEST_TESTDIR environment variable
-TestStatsFile | The file test statistics will be written to - see description of the OR_UNITTEST_STATSFILE environment variable
+ResourceDir | The directory containing resource files - see description of the `OR_UNITTEST_RESOURCEDIR` environment variable
+TempDir | The directory containing temporary files - see description of the `OR_UNITTEST_TMPDIR` environment variable
+TestDir | The directory containing test files - see description of the `OR_UNITTEST_TESTDIR` environment variable
+TestStatsFile | The file test statistics will be written to - see description of the `OR_UNITTEST_STATSFILE` environment variable
+TestStatsFileXml | The XML file test statistics will be written to - see description of the `OR_UNITTEST_STATSFILE_XML` environment variable
 
 Method              | Explanation
 ------------------- | -----------
