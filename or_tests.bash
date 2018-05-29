@@ -19,7 +19,11 @@ TEST_CLEANUP()
     if [ -d $TESTDIR ]
     then
         cd $TESTDIR
-        rm -f *.xml *.img *.cfg ignore_apps.lst
+        rm -f *.img *.cfg ignore_apps.lst
+        for utxml in $(grep -l "^<OPENROAD " *.xml)
+        do
+            rm -f $utxml
+        done
     fi
     exit $return_code
 }
@@ -119,13 +123,6 @@ then
 fi
 
 printf "\nOR Unit tests:\n"
-if $cygwin
-then
-    display_log_file=`cygpath --windows ${TESTDIR}/orunittest.log`
-else
-    display_log_file=${TESTDIR}/orunittest.log
-fi
-printf " Using logfile %s ...\n\n" ${display_log_file}
 
 cd $TESTDIR
 TEST_CHECKCMD $? 0 "Y" "Unable to change into ${TESTDIR}"
@@ -133,18 +130,44 @@ rm -f *.xml
 cp -r ${SCRIPTDIR}/unittests/* .
 TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests files into test directory ${TESTDIR}"
 
-if [ -z "$OR_UNITTEST_STATSFILE" ]
+if [ "${OR_UNITTEST_GEN_XML_STATS^^}" = "TRUE" ]
 then
-	teststats=${TESTDIR}/orunitteststats.log
-else
-	if $cygwin
+	if [ -z "$OR_UNITTEST_STATSFILE_XML" ]
 	then
-		teststats=`cygpath --unix ${OR_UNITTEST_STATSFILE}`
+		teststats=${TESTDIR}/orunitteststats.xml
 	else
-		teststats=${OR_UNITTEST_STATSFILE}
+		if $cygwin
+		then
+			teststats=`cygpath --unix ${OR_UNITTEST_STATSFILE_XML}`
+		else
+			teststats=${OR_UNITTEST_STATSFILE_XML}
+		fi
+	fi
+else
+	if [ -z "$OR_UNITTEST_STATSFILE" ]
+	then
+		teststats=${TESTDIR}/orunitteststats.log
+	else
+		if $cygwin
+		then
+			teststats=`cygpath --unix ${OR_UNITTEST_STATSFILE}`
+		else
+			teststats=${OR_UNITTEST_STATSFILE}
+		fi
 	fi
 fi
 rm -f ${teststats}
+
+if $cygwin
+then
+    display_log_file=`cygpath --windows ${TESTDIR}/orunittest.log`
+	display_stats_file=`cygpath --windows ${teststats}`
+else
+    display_log_file=${TESTDIR}/orunittest.log
+	display_stats_file=${teststats}
+fi
+printf " Logfile %s ...\n" ${display_log_file}
+printf " Statistics file %s ...\n\n" ${display_stats_file}
 
 rc=0
 
@@ -242,14 +265,12 @@ EOF
     fi
 done
 
-printf "\nTest Statistics:\n\n"
-cat ${teststats}
-
-printf "\nDetailed log: %s\n" ${display_log_file}
+printf "\nTest Statistics: %s\n" ${display_stats_file}
+printf "Detailed log: %s\n" ${display_log_file}
 
 if [ $rc -ne 0 ]
 then
-   printf "\nOR Unit Tests completed. ERROR(s) encountered in %s unit test(s).\n" $rc
+   printf "\nOR Unit Tests completed. ERROR(s) encountered in %s unit test suite(s).\n" $rc
    TEST_CLEANUP $rc
 else
     printf "\nOR Unit Tests successfully executed.\n"
