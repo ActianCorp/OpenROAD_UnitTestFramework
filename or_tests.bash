@@ -20,6 +20,9 @@ TEST_CLEANUP()
     then
         cd $TESTDIR
         rm -f *.img *.cfg ignore_apps.lst
+#       Remove OpenROAD XML export files (XML files containing an <OPENROAD> element).
+#       Note: The test stats XML file (if OR_UNITTEST_GEN_XML_STATS=TRUE)
+#             is not an export file, thus it will not be deleted.
         for utxml in $(grep -l "^<OPENROAD " *.xml)
         do
             rm -f $utxml
