@@ -133,7 +133,13 @@ rm -f *.xml
 cp -r ${SCRIPTDIR}/unittests/* .
 TEST_CHECKCMD $? 0 "Y" "Unable to copy unittests files into test directory ${TESTDIR}"
 
-if [ "${OR_UNITTEST_GEN_XML_STATS^^}" = "TRUE" ]
+if [ -z "$OR_UNITTEST_GEN_XML_STATS" ]
+then
+	genxmlstats=FALSE
+else
+	genxmlstats=`echo "${OR_UNITTEST_GEN_XML_STATS}" | tr [a-z] [A-Z]`
+fi
+if [ "$genxmlstats" = "TRUE" ]
 then
 	if [ -z "$OR_UNITTEST_STATSFILE_XML" ]
 	then
