@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<!-- Copyright (c) 2018 Actian Corporation. All Rights Reserved.-->
-	<APPLICATION name="unittestframework">
+	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
 				<appname>core</appname>
@@ -2017,7 +2017,7 @@ ENDDECLARE
 			tmr = result.testmethodresults[tmc];
 			ts_elem.AddChildElement(name = 'testcase', child = BYREF(tm_elem));
 			tm_elem.AddAttribute(name = 'name', value = tmr.testmethodname);
-			tm_elem.AddAttribute(name = 'classname', value = tmr.testclassname);
+			tm_elem.AddAttribute(name = 'classname', value = CurObject.TestSuiteName + '.' + tmr.testclassname);
 			jn.SetValue(value = float8(tmr.exec_time)/1000.0);
 			tm_elem.AddAttribute(name = 'time', value = jn.TextValue);
 			CASE tmr.status OF
