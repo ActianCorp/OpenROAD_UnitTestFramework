@@ -218,7 +218,7 @@ enddeclare
 begin
 	p = ProcExec(CurMethod.Parent);
 	if expectedInteger is not null then
-		if actualInteger is not null or expectedInteger = actualInteger then
+		if actualInteger is not null and expectedInteger = actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 				'expected not equals: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
 				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
@@ -226,7 +226,7 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null then
-		if actualVarchar is not null or expectedVarchar = actualVarchar then
+		if actualVarchar is not null and expectedVarchar = actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 				'expected not equals: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
 				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
@@ -234,7 +234,7 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null then
-		if actualFloat is not null or expectedFloat = actualFloat then
+		if actualFloat is not null and expectedFloat = actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 				'expected not equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
 				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
@@ -242,7 +242,7 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null then
-		if actualMoney is not null or expectedMoney = actualMoney then
+		if actualMoney is not null and expectedMoney = actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 				'expected not equals: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
 				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
@@ -250,7 +250,7 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null then
-		if actualDate is not null or expectedDate = actualDate then
+		if actualDate is not null and expectedDate = actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
 				'expected not equals: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
 				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
