@@ -130,40 +130,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger <> actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar <> actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat <> actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney <> actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate <> actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -214,40 +214,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger = actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected not equals: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar = actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected not equals: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat = actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected not equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney = actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected not equals: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate = actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected not equals: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -298,40 +298,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger <= actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected less than: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar <= actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected less than: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat <= actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected less than: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney <= actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected less than: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate <= actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected less than: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -382,40 +382,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger < actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less or equals: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected less or equals: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar < actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less or equals: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected less or equals: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat < actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected	less or equals: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected less or equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney < actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected	less or equals: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected less or equals: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate < actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less or equals: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected less or equals: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -466,40 +466,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger >= actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected greater than: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar >= actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected greater than: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat >= actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected greater than: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney >= actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected greater than: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate >= actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected greater than: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -550,40 +550,40 @@ begin
 	if expectedInteger is not null and actualInteger is not null then
 		if expectedInteger > actualInteger then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater or equals: <' + varchar(expectedInteger) + '>' +
-				' actual: <' + varchar(actualInteger) + '>',
+				'expected greater or equals: <' + ifnull(varchar(expectedInteger), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualInteger), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedVarchar is not null and actualVarchar is not null then
 		if expectedVarchar > actualVarchar then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater or equals: <' + varchar(expectedVarchar) + '>' +
-				' actual: <' + varchar(actualVarchar) + '>',
+				'expected greater or equals: <' + ifnull(varchar(expectedVarchar), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualVarchar), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
 		if expectedFloat > actualFloat then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected	greater or equals: <' + varchar(expectedFloat) + '>' +
-				' actual: <' + varchar(actualFloat) + '>',
+				'expected greater or equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedMoney is not null and actualMoney is not null then
 		if expectedMoney > actualMoney then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected	greater or equals: <' + varchar(expectedMoney) + '>' +
-				' actual: <' + varchar(actualMoney) + '>',
+				'expected greater or equals: <' + ifnull(varchar(expectedMoney), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualMoney), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
 	elseif expectedDate is not null and actualDate is not null then
 		if expectedDate > actualDate then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater or equals: <' + varchar(expectedDate) + '>' +
-				' actual: <' + varchar(actualDate) + '>',
+				'expected greater or equals: <' + ifnull(varchar(expectedDate), 'NULL') + '>' +
+				' actual: <' + ifnull(varchar(actualDate), 'NULL') + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
