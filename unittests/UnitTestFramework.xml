@@ -23,6 +23,10 @@
  * @author	Bodo Bergmann
  */
 
+INITIALIZE()=
+DECLARE
+	equalFloats = PROCEDURE RETURNING INTEGER NOT NULL;
+ENDDECLARE
 
 /**
  * Fails a test with the given errortext.
@@ -144,10 +148,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null then
-		if actualFloat is null or expectedFloat <> actualFloat then
+		if actualFloat is null or equalFloats(f1=expectedFloat, f2=actualFloat)=FALSE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -234,10 +238,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null then
-		if actualFloat is not null and expectedFloat = actualFloat then
+		if actualFloat is not null and equalFloats(f1=expectedFloat, f2=actualFloat)=TRUE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected not equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected not equals: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -324,10 +328,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
-		if expectedFloat <= actualFloat then
+		if expectedFloat < actualFloat or equalFloats(f1=expectedFloat, f2=actualFloat)=TRUE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less than: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected less than: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -408,10 +412,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
-		if expectedFloat < actualFloat then
+		if expectedFloat < actualFloat and equalFloats(f1=expectedFloat, f2=actualFloat)=FALSE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected less or equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected less or equals: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -492,10 +496,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
-		if expectedFloat >= actualFloat then
+		if expectedFloat > actualFloat or equalFloats(f1=expectedFloat, f2=actualFloat)=TRUE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater than: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected greater than: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -576,10 +580,10 @@ begin
 				errorexec =	p.Name);
 		endif;
 	elseif expectedFloat is not null and actualFloat is not null then
-		if expectedFloat > actualFloat then
+		if expectedFloat > actualFloat and equalFloats(f1=expectedFloat, f2=actualFloat)=FALSE then
 			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-				'expected greater or equals: <' + ifnull(varchar(expectedFloat), 'NULL') + '>' +
-				' actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+				'expected greater or equals: <' + float2txt(f=expectedFloat) + '>' +
+				' actual: <' + float2txt(f=actualFloat) + '>',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
@@ -719,7 +723,7 @@ begin
 			errorexec =	p.Name);
 	elseif actualFloat IS NOT NULL then
 		CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
-			'expected: <NULL> actual: <' + ifnull(varchar(actualFloat), 'NULL') + '>',
+			'expected: <NULL> actual: <' + float2txt(f=actualFloat) + '>',
 			errorline = p.linenumber,
 			errorexec =	p.Name);
 	elseif actualMoney IS NOT NULL then
@@ -798,7 +802,45 @@ begin
 			errorline = p.linenumber,
 			errorexec =	p.Name);
 	endif;
-end]]>
+end
+
+/**
+ * The equalFloats() procedure compares two float values.
+ * Two nearly equal IEEE floating-point values are considered as equal
+ * if their text representations are equal.
+ *
+ * @param f1	The first float value to be compared
+ * @param f2	The second float value to be compared
+ * @return	TRUE if the two float values are considered to be equal, FALSE otherwise.
+ *
+ */
+PROCEDURE equalFloats(
+	f1 = float,
+	f2 = float
+)=
+declare
+	jn1 = JsonNumber;
+	jn2 = JsonNumber;
+enddeclare
+{
+	if f1 IS NULL THEN
+		if f2 IS NULL THEN
+			RETURN TRUE;
+		else
+			RETURN FALSE;
+		endif;
+	elseif f2 IS NULL THEN
+		RETURN FALSE;
+	endif;
+	jn1.SetValue(value=f1);
+	jn2.SetValue(value=f2);
+	if jn1.TextValue=jn2.TextValue THEN
+		RETURN TRUE;
+	else
+		RETURN FALSE;
+	endif;
+}
+]]>
 		</script>
 		<methods>
 			<row>
@@ -887,6 +929,39 @@ PROCEDURE executeTests
 }
 ]]>
 		</script>
+	</COMPONENT>
+	<COMPONENT name="float2txt" xsi:type="proc4glsource">
+		<versshortremarks>
+			<![CDATA[Converts float value to text - length depending on value]]>
+		</versshortremarks>
+		<script>
+			<![CDATA[/**
+ * The float2txt procedure converts a float value to text and returns it.
+ * The length of the returned text depends on the value - there are no trailing zeros.
+ *
+ *
+ * @author	Bodo Bergmann
+ *
+ * @param f	The float value to be converted
+ * @return	The text representing the float value (with decimal point - independent of II_DECIMAL)
+ *		The text is 'NULL' for a null float value.
+ *
+ */
+
+PROCEDURE float2txt(f = float)=
+declare
+    jn = JsonNumber;
+enddeclare
+{
+    if f IS NULL THEN
+      return 'NULL';
+    endif;
+    jn.SetValue(value=f);
+    RETURN jn.TextValue;
+}
+]]>
+		</script>
+		<datatype>varchar(20)</datatype>
 	</COMPONENT>
 	<COMPONENT name="G_Assert" xsi:type="globsource">
 		<datatype>assert</datatype>
