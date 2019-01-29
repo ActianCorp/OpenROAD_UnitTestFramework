@@ -807,7 +807,7 @@ end
 /**
  * The equalFloats() procedure compares two float values.
  * Two nearly equal IEEE floating-point values are considered as equal
- * if their text reprersentations are equal.
+ * if their text representations are equal.
  *
  * @param f1	The first float value to be compared
  * @param f2	The second float value to be compared
