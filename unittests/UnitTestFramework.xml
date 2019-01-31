@@ -295,8 +295,8 @@ end
  */
 METHOD assertLessThan (
 	errortext = varchar(2000) not null;
-	expectedInteger = Integer default null;
-	actualInteger = Integer default null;
+	expectedInteger = Integer8 default null;
+	actualInteger = Integer8 default null;
 	expectedFloat = Float default null;
 	actualFloat = Float default null;
 	expectedMoney = Money default null;
@@ -379,8 +379,8 @@ end
  */
 METHOD assertLessEquals (
 	errortext = varchar(2000) not null;
-	expectedInteger = Integer default null;
-	actualInteger = Integer default null;
+	expectedInteger = Integer8 default null;
+	actualInteger = Integer8 default null;
 	expectedFloat = Float default null;
 	actualFloat = Float default null;
 	expectedMoney = Money default null;
@@ -463,8 +463,8 @@ end
  */
 METHOD assertGreaterThan (
 	errortext = varchar(2000) not null;
-	expectedInteger = Integer default null;
-	actualInteger = Integer default null;
+	expectedInteger = Integer8 default null;
+	actualInteger = Integer8 default null;
 	expectedFloat = Float default null;
 	actualFloat = Float default null;
 	expectedMoney = Money default null;
@@ -547,8 +547,8 @@ end
  */
 METHOD assertGreaterEquals (
 	errortext = varchar(2000) not null;
-	expectedInteger = Integer default null;
-	actualInteger = Integer default null;
+	expectedInteger = Integer8 default null;
+	actualInteger = Integer8 default null;
 	expectedFloat = Float default null;
 	actualFloat = Float default null;
 	expectedMoney = Money default null;
