@@ -71,7 +71,7 @@ METHOD throwAssertionFailedError(
 }
 
 /**
- * Fails a test with the given errortext.
+ * Skips a test with the given errortext.
  *
  * @param errortext	The text to be printed
  * @param errorline	The line where the skipping occured
@@ -700,7 +700,7 @@ end
 METHOD assertNull (
 	errortext = varchar(2000) not null;
 	actual = Object default null;
-	actualInteger = Integer default null;
+	actualInteger = Integer8 default null;
 	actualFloat = Float default null;
 	actualMoney = Money default null;
 	actualDate = Date default null;
@@ -760,7 +760,7 @@ end
 METHOD assertNotNull (
 	errortext = varchar(2000) not null;
 	actual = Object;
-	actualInteger = Integer;
+	actualInteger = Integer8;
 	actualFloat = Float;
 	actualMoney = Money;
 	actualDate = Date;
