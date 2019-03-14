@@ -170,11 +170,15 @@ rm -f ${teststats}
 if $cygwin
 then
     display_log_file=`cygpath --windows ${TESTDIR}/orunittest.log`
-	display_stats_file=`cygpath --windows ${teststats}`
+    display_stats_file=`cygpath --windows ${teststats}`
+    json_registration_file=`cygpath --windows ${SCRIPTDIR}/unittests`
 else
     display_log_file=${TESTDIR}/orunittest.log
 	display_stats_file=${teststats}
+    json_registration_file=${SCRIPTDIR}/unittests
 fi
+export II_W4GL_JSON_CONFIG=${json_registration_file}
+#printf " II_W4GL_JSON_CONFIG %s ...\n" ${json_registration_file}
 printf " Logfile %s ...\n" ${display_log_file}
 printf " Statistics file %s ...\n\n" ${display_stats_file}
 
