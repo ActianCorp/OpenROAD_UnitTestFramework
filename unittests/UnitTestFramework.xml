@@ -26,6 +26,8 @@
 INITIALIZE()=
 DECLARE
 	equalFloats = PROCEDURE RETURNING INTEGER NOT NULL;
+	equalStrings = PROCEDURE RETURNING INTEGER NOT NULL;
+	equalJSON = PROCEDURE RETURNING INTEGER NOT NULL;
 ENDDECLARE
 
 /**
@@ -110,24 +112,39 @@ end
  * @param actualDate		The actual date value
  * @param expectedVarchar	The expected varchar value
  * @param actualVarchar		The actual varchar value
+ * @param expectedString	The expected StringObject
+ * @param actualString		The actual StringObject
+ * @param expectedJSON		The expected StringObject containing JSON
+ * @param actualJSON		The actual StringObject containing JSON
+ * @param expectedJsonValue	The expected JsonValue
+ * @param actualJsonValue	The actual JsonValue
  *
  */
 
 METHOD assertEquals (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null,
+	expectedString = stringobject default null,
+	actualString = stringobject default null,
+	expectedJSON = stringobject default null,
+	actualJSON = stringobject default null,
+	expectedJsonValue = JsonValue default null,
+	actualJsonValue = JsonValue default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
+	jh = JsonHandler default null;
+	j1	= Stringobject default null;
+	j2	= Stringobject default null;
 enddeclare
 begin
 	p = ProcExec(CurMethod.Parent);
@@ -171,12 +188,66 @@ begin
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
+	elseif expectedString is not null then
+		if equalStrings(s1=expectedString, s2=actualString)=FALSE then
+			if CurObject.TraceStringsOnFailure=TRUE then
+				CurMethod.Trace(text = HC_NEWLINE+'=== Expected string: ===');
+				CurMethod.Trace(string = expectedString);
+				CurMethod.Trace(text = HC_NEWLINE+'=== Actual string (not equal): ===');
+				CurMethod.Trace(string = actualString);
+			endif;
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertEquals: actualString does not match expectedString',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
+	elseif expectedJSON is not null then
+		if equalJSON(json1=expectedJSON, json2=actualJSON)=FALSE then
+			if CurObject.TraceStringsOnFailure=TRUE then
+				CurMethod.Trace(text = HC_NEWLINE+'=== Expected JSON: ===');
+				CurMethod.Trace(string = expectedJSON);
+				CurMethod.Trace(text = HC_NEWLINE+'=== Actual JSON (not equal): ===');
+				CurMethod.Trace(string = actualJSON);
+			endif;
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertEquals: actualJSON does not match expectedJSON',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
+	elseif expectedJsonValue is not null then
+		if actualJsonValue is null then
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertEquals: actualJsonValue is NULL',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
+		jh = CurSession.JsonHandler;
+		j1 = stringobject.Create();
+		j2 = stringobject.Create();
+		jh.Write(value=expectedJsonValue, json=j1, sortobjectmembers=TRUE);
+		jh.Write(value=actualJsonValue, json=j2, sortobjectmembers=TRUE);
+		if equalJSON(json1=j1, json2=j2)=FALSE then
+			if CurObject.TraceStringsOnFailure=TRUE then
+				CurMethod.Trace(text = HC_NEWLINE+'=== Expected JsonValue: ===');
+				CurMethod.Trace(string = j1);
+				CurMethod.Trace(text = HC_NEWLINE+'=== Actual JsonValue (not equal): ===');
+				CurMethod.Trace(string = j2);
+			endif;
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertEquals: actualJsonValue does not match expectedJsonValue',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
 	else
 		if actualInteger is not null
 		or actualVarchar is not null
 		or actualFloat is not null
 		or actualMoney is not null
-		or actualDate is not null then
+		or actualDate is not null
+		or actualString is not null
+		or actualJSON is not null
+		or actualJsonValue is not null
+		then
 			CurObject.throwAssertionFailedError(errortext='Expected parameter is missing!',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
@@ -204,20 +275,29 @@ end
  *
  */
 METHOD assertNotEquals (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null,
+	expectedString = stringobject default null,
+	actualString = stringobject default null,
+	expectedJSON = stringobject default null,
+	actualJSON = stringobject default null,
+	expectedJsonValue = JsonValue default null,
+	actualJsonValue = JsonValue default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
+	jh = JsonHandler default null;
+	j1	= Stringobject default null;
+	j2	= Stringobject default null;
 enddeclare
 begin
 	p = ProcExec(CurMethod.Parent);
@@ -261,12 +341,56 @@ begin
 				errorline = p.linenumber,
 				errorexec =	p.Name);
 		endif;
+	elseif expectedString is not null then
+		if equalStrings(s1=expectedString, s2=actualString)=TRUE then
+			if CurObject.TraceStringsOnFailure=TRUE then
+				CurMethod.Trace(text = HC_NEWLINE+'=== Actual/expected string (equal): ===');
+				CurMethod.Trace(string = actualString);
+			endif;
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertNotEquals: actualString is equal expectedString',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
+	elseif expectedJSON is not null then
+		if equalJSON(json1=expectedJSON, json2=actualJSON)=TRUE then
+			if CurObject.TraceStringsOnFailure=TRUE then
+				CurMethod.Trace(text = HC_NEWLINE+'=== Actual/expected JSON (equal): ===');
+				CurMethod.Trace(string = actualJSON);
+			endif;
+			CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+				'assertNotEquals: actualJSON is equal expectedJSON',
+				errorline = p.linenumber,
+				errorexec =	p.Name);
+		endif;
+	elseif expectedJsonValue is not null then
+		if actualJsonValue is not null then
+			jh = CurSession.JsonHandler;
+			j1 = stringobject.Create();
+			j2 = stringobject.Create();
+			jh.Write(value=expectedJsonValue, json=j1, sortobjectmembers=TRUE);
+			jh.Write(value=actualJsonValue, json=j2, sortobjectmembers=TRUE);
+			if equalJSON(json1=j1, json2=j2)=TRUE then
+				if CurObject.TraceStringsOnFailure=TRUE then
+					CurMethod.Trace(text = HC_NEWLINE+'=== Actual/expected JsonValue (equal): ===');
+					CurMethod.Trace(string = j1);
+				endif;
+				CurObject.throwAssertionFailedError(errortext=errortext+HC_NEWLINE+HC_TAB+
+					'assertNotEquals: actualJsonValue is equal expectedJsonValue',
+					errorline = p.linenumber,
+					errorexec =	p.Name);
+			endif;
+		endif;
 	else
 		if actualInteger is null
 		and actualVarchar is null
 		and actualFloat is null
 		and actualMoney is null
-		and actualDate is null then
+		and actualDate is null
+		or actualString is null
+		or actualJSON is null
+		or actualJsonValue is null
+		then
 			CurObject.throwAssertionFailedError(errortext='Expected parameter is missing!',
 				errorline = p.linenumber,
 				errorexec =	p.Name);
@@ -294,17 +418,17 @@ end
  *
  */
 METHOD assertLessThan (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -378,17 +502,17 @@ end
  *
  */
 METHOD assertLessEquals (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -462,17 +586,17 @@ end
  *
  */
 METHOD assertGreaterThan (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -546,17 +670,17 @@ end
  *
  */
 METHOD assertGreaterEquals (
-	errortext = varchar(2000) not null;
-	expectedInteger = Integer8 default null;
-	actualInteger = Integer8 default null;
-	expectedFloat = Float default null;
-	actualFloat = Float default null;
-	expectedMoney = Money default null;
-	actualMoney = Money default null;
-	expectedDate = Date default null;
-	actualDate = Date default null;
-	expectedVarchar = varchar(4096) default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	expectedInteger = Integer8 default null,
+	actualInteger = Integer8 default null,
+	expectedFloat = Float default null,
+	actualFloat = Float default null,
+	expectedMoney = Money default null,
+	actualMoney = Money default null,
+	expectedDate = Date default null,
+	actualDate = Date default null,
+	expectedVarchar = varchar(4096) default null,
+	actualVarchar = varchar(4096) default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -620,9 +744,9 @@ end
  *
  */
 METHOD assertSame (
-	errortext = varchar(2000) not null;
-	expected = Object default null;
-	actual = Object default null;
+	errortext = varchar(2000) not null,
+	expected = Object default null,
+	actual = Object default null,
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -656,9 +780,9 @@ end
  *
  */
 METHOD assertNotSame (
-	errortext = varchar(2000) not null;
-	expected = Object default null;
-	actual = Object default null;
+	errortext = varchar(2000) not null,
+	expected = Object default null,
+	actual = Object default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -698,13 +822,13 @@ end
  *
  */
 METHOD assertNull (
-	errortext = varchar(2000) not null;
-	actual = Object default null;
-	actualInteger = Integer8 default null;
-	actualFloat = Float default null;
-	actualMoney = Money default null;
-	actualDate = Date default null;
-	actualVarchar = varchar(4096) default null;
+	errortext = varchar(2000) not null,
+	actual = Object default null,
+	actualInteger = Integer8 default null,
+	actualFloat = Float default null,
+	actualMoney = Money default null,
+	actualDate = Date default null,
+	actualVarchar = varchar(4096) default null
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -758,13 +882,13 @@ end
  *
  */
 METHOD assertNotNull (
-	errortext = varchar(2000) not null;
-	actual = Object;
-	actualInteger = Integer8;
-	actualFloat = Float;
-	actualMoney = Money;
-	actualDate = Date;
-	actualVarchar = varchar(4096);
+	errortext = varchar(2000) not null,
+	actual = Object,
+	actualInteger = Integer8,
+	actualFloat = Float,
+	actualMoney = Money,
+	actualDate = Date,
+	actualVarchar = varchar(4096)
 ) =
 declare
 	p = ProcExec DEFAULT NULL;
@@ -840,8 +964,92 @@ enddeclare
 		RETURN FALSE;
 	endif;
 }
+
+PROCEDURE equalStrings(
+	s1 = stringobject default null,
+	s2 = stringobject default null,
+)=
+declare
+	i = integer not null default 1;
+	v1 = varchar(16000) not null;
+	v2 = varchar(16000) not null;
+enddeclare
+{
+	IF s1 IS NULL THEN
+		IF s2 IS NULL THEN
+			RETURN TRUE;
+		ELSE
+			RETURN FALSE;
+		ENDIF;
+	ELSEIF s2 IS NULL THEN
+		RETURN FALSE;
+	ENDIF;
+
+	IF s1.Length <> s2.Length THEN
+		RETURN FALSE;
+	ENDIF;
+
+	// Now compare the strings - they could be larger than 2000 byte
+	// therefore we cannot use the Value attribute.
+	// Use 4000 character chunks - Note: A UTF8 character can take up to 4 bytes
+	WHILE i<=s1.Length DO
+		v1 = s1.substring(startposition=i, length=4000);
+		v2 = s2.substring(startposition=i, length=4000);
+		if v1<>v2 THEN
+			RETURN FALSE;
+		ENDIF;
+		i=i+4000;
+	ENDWHILE;
+	RETURN TRUE;
+}
+
+PROCEDURE equalJSON(
+	json1 = stringobject default null,
+	json2 = stringobject default null,
+)=
+declare
+	jv1 = JsonValue default null;
+	jv2 = JsonValue default null;
+	jh = JsonHandler default null;
+	json1a	= Stringobject;
+	json2a	= Stringobject;
+enddeclare
+{
+	IF json1 IS NULL THEN
+		IF json2 IS NULL THEN
+			RETURN TRUE;
+		ELSE
+			RETURN FALSE;
+		ENDIF;
+	ELSEIF json2 IS NULL THEN
+		RETURN FALSE;
+	ENDIF;
+	jh = CurSession.JsonHandler;
+	jv1 = jh.Parse(json = json1);
+	IF jv1 IS NULL THEN
+		CurProcedure.Trace(text = jh.Errortext);
+		RETURN FALSE;
+	ENDIF;
+	jh.Write(value=jv1, json=json1a, sortobjectmembers=TRUE);
+
+	jv2 = jh.Parse(json = json2);
+	IF jv2 IS NULL THEN
+		CurProcedure.Trace(text = jh.Errortext);
+		RETURN FALSE;
+	ENDIF;
+	jh.Write(value=jv2, json=json2a, sortobjectmembers=TRUE);
+	RETURN equalStrings(s1=json1a, s2=json2a);
+}
+
 ]]>
 		</script>
+		<attributes>
+			<row>
+				<displayname>TraceStringsOnFailure</displayname>
+				<datatype>smallint</datatype>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
 		<methods>
 			<row>
 				<displayname>fail</displayname>
