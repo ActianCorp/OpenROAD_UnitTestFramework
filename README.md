@@ -13,8 +13,8 @@ The following information assumes knowledge of OpenROAD.
 
 Getting Started:
   * OpenROAD Developer version 6.2 or later
-  * Ingres Net client  (for example Ingres 10.2 + latest patch) installed with Terminal Monitor
-  * OpenROAD Repository database which stores your application code
+  * Ingres Net client  (for example Ingres 10.2 + latest patch) to match the version of OpenROAD
+  * OpenROAD Repository database (your application code)
 
 Automation. To use the supplied scripts you may also need:
   * Cygwin (from https://www.cygwin.com/)
