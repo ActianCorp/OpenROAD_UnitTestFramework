@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<!-- Copyright (c) 2019 Actian Corporation. All Rights Reserved.-->
+	<!-- Copyright (c) 2022 Actian Corporation. All Rights Reserved.-->
 	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
@@ -1180,8 +1180,8 @@ enddeclare
 	<COMPONENT name="G_Helper" xsi:type="globsource">
 		<datatype>helper</datatype>
 	</COMPONENT>
-	<COMPONENT name="GetTickCount" xsi:type="proc3glsource">
-		<datatype>integer</datatype>
+	<COMPONENT name="GetTickCount64" xsi:type="proc3glsource">
+		<datatype>integer8</datatype>
 		<libraryname>kernel32.dll</libraryname>
 	</COMPONENT>
 	<COMPONENT name="Helper" xsi:type="classsource">
@@ -1905,7 +1905,7 @@ METHOD tearDown()=
 			</row>
 			<row>
 				<displayname>exec_time</displayname>
-				<datatype>integer</datatype>
+				<datatype>integer8</datatype>
 			</row>
 			<row>
 				<displayname>err</displayname>
@@ -1943,7 +1943,7 @@ METHOD startTest(thetest = Testcase)=
 	CurMethod.Trace(text = HC_NEWLINE + 'Running tests from ' + thetest.ClassName + ' ...');
 	CurObject.testclassname = thetest.classname;
 	CurObject.testTimestamp = DATE('NOW');
-	CurObject.exec_time = GetTickCount();
+	CurObject.exec_time = GetTickCount64();
 }
 
 /**
@@ -1952,7 +1952,7 @@ METHOD startTest(thetest = Testcase)=
  */
 METHOD endTest()=
 {
-	CurObject.exec_time = GetTickCount() - CurObject.exec_time;
+	CurObject.exec_time = GetTickCount64() - CurObject.exec_time;
 }
 
 /**
@@ -1971,7 +1971,7 @@ METHOD StartTestMethod(thetest = Testcase, testmethod = varchar(32) not null)=
 	tmr.testclassname = thetest.classname;
 	tmr.testmethodname = testmethod;
 	CurObject.testmethodresults[CurObject.testmethodresults.LastRow+1] = tmr;
-	tmr.exec_time = GetTickCount();
+	tmr.exec_time = GetTickCount64();
 }
 
 /**
@@ -1982,7 +1982,7 @@ METHOD StartTestMethod(thetest = Testcase, testmethod = varchar(32) not null)=
  */
 METHOD EndTestMethod(status = INTEGER NOT NULL)=
 {
-	tmr.exec_time = GetTickCount() - tmr.exec_time;
+	tmr.exec_time = GetTickCount64() - tmr.exec_time;
 	tmr.status = status;
 	tmr.err = G_error;
 	CASE status OF
@@ -2098,7 +2098,7 @@ ENDDECLARE
 			</row>
 			<row>
 				<displayname>exec_time</displayname>
-				<datatype>integer</datatype>
+				<datatype>integer8</datatype>
 			</row>
 			<row>
 				<displayname>testclassname</displayname>
@@ -2199,8 +2199,8 @@ METHOD run(
 DECLARE
 	results = ARRAY OF TestResult;
 	i = INTEGER NOT NULL;
-	t1 = INTEGER not null;
-	t2 = INTEGER not null;
+	t1 = INTEGER8 not null;
+	t2 = INTEGER8 not null;
 ENDDECLARE
 {
 	IF CurObject.Name = '' THEN
@@ -2215,11 +2215,11 @@ ENDDECLARE
 	ENDFOR;
 	// Running tests
 	result.testtimestamp = DATE('NOW');
-	t1 = GetTickCount();
+	t1 = GetTickCount64();
 	FOR i=1 TO CurObject.tests.LastRow DO
 		CurObject.tests[i].run(result = results[i]);
 	ENDFOR;
-	t2 = GetTickCount();
+	t2 = GetTickCount64();
 	result.exec_time = t2-t1;
 	CurExec.Trace(text= HC_NEWLINE + 'TestSuite ' + CurObject.Name + ' DONE.');
 }
@@ -2424,7 +2424,7 @@ ENDDECLARE
 			</row>
 			<row>
 				<displayname>exec_time</displayname>
-				<datatype>integer</datatype>
+				<datatype>integer8</datatype>
 			</row>
 			<row>
 				<displayname>testsuitename</displayname>
