@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<!-- Copyright (c) 2022 Actian Corporation. All Rights Reserved.-->
+	<!-- Copyright (c) 2025 Actian Corporation. All Rights Reserved.-->
 	<APPLICATION name="UnitTestFramework">
 		<included_apps>
 			<row>
@@ -1780,6 +1780,7 @@ METHOD run(result=TestResult DEFAULT NULL)=
 			stat = $ERROR;
 		ENDIF;
 		result.EndTestMethod(status = stat);
+		result.EndTest();
 		RETURN; // Do not run any test methods if setUp was not OK
 	ENDIF;
 
