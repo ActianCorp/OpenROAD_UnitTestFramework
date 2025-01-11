@@ -12,14 +12,14 @@ The following information assumes knowledge of OpenROAD.
 ## System requirements
 
 Getting Started:
-  * OpenROAD Developer version 6.2 or later
+  * OpenROAD Developer version 6.2 or later (due to renameapp requirement)
   * Ingres Net client  (for example Ingres 10.2 + latest patch) to match the version of OpenROAD
   * OpenROAD Repository database (your application code)
 
 Automation. To use the supplied scripts you may also need:
   * Cygwin (from https://www.cygwin.com/)
-  * bash (some bash extensions have been used)
-  * diffutils (diff) for example https://www.gnu.org/software/diffutils/diffutils.html
+      * bash (some bash extensions have been used)
+      * diffutils (diff) for example https://www.gnu.org/software/diffutils/diffutils.html
   * Ingres Terminal Monitor or SQL command line utility
   * Scheduling tool such as cron or taskschd
 
