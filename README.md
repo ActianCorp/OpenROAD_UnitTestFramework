@@ -11,11 +11,17 @@ The following information assumes knowledge of OpenROAD.
 
 ## System requirements
 
-  * OpenROAD 6.2 or later (due to renameapp requirement)
-       * Ingres (for example Ingres 10.2 + latest patch) for test database
+Getting Started:
+  * OpenROAD Developer version 6.2 or later (due to renameapp requirement)
+  * Ingres Net client  (for example Ingres 10.2 + latest patch) to match the version of OpenROAD
+  * OpenROAD Repository database (your application code)
+
+Automation. To use the supplied scripts you may also need:
   * Cygwin (from https://www.cygwin.com/)
       * bash (some bash extensions have been used)
-      * diffutils (diff)
+      * diffutils (diff) for example https://www.gnu.org/software/diffutils/diffutils.html
+  * Ingres Terminal Monitor or SQL command line utility
+  * Scheduling tool such as cron or taskschd
 
 ## Using the OpenROAD UnitTest Framework to write tests
 
@@ -230,7 +236,7 @@ There is a graphical front end that you can use in order to run your tests.
 To use the GUI test runner, simply run the `UnitTestRunner` application (can be imported from `UnitTestRunner.xml`)
 either from the Workbench or from command line.
 
-### Asertion methods
+### Assertion methods
 
 There are several methods of the Assert class (available via the G_Assert global variable), which can be used to test different conditions,
 usually to compare an actual value with an expected value:
