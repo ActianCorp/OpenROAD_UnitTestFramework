@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<!-- Copyright (c) 2025 Actian Corporation. All Rights Reserved.-->
-	<APPLICATION name="UnitTestFramework">
+	<!-- Copyright (c) 2026 Actian Corporation. All Rights Reserved.-->
+	<APPLICATION name="unittestframework">
 		<included_apps>
 			<row>
 				<appname>core</appname>
@@ -2199,6 +2199,8 @@ METHOD run(
 )=
 DECLARE
 	results = ARRAY OF TestResult;
+	tresult = TestResult DEFAULT NULL;
+	test = TestCase DEFAULT NULL;
 	i = INTEGER NOT NULL;
 	t1 = INTEGER8 not null;
 	t2 = INTEGER8 not null;
@@ -2218,7 +2220,20 @@ ENDDECLARE
 	result.testtimestamp = DATE('NOW');
 	t1 = GetTickCount64();
 	FOR i=1 TO CurObject.tests.LastRow DO
-		CurObject.tests[i].run(result = results[i]);
+		tresult = results[i];
+		test = CurObject.tests[i];
+		test.run(result = tresult);
+		IF tresult.testclassname = '' THEN
+			// No testclassname set, probably compile error in testclass
+			tresult.testclassname = test.ClassName;
+			tresult.TestsRun = 1;
+			tresult.testtimestamp = DATE('NOW');
+			tresult.exec_time = 0;
+			G_Error  = Error.Create();
+			G_Error.errorexec = test.ClassName;
+			G_Error.errortext = 'Error in testcase class ' + test.ClassName;
+			tresult.AddError(thetest = test);
+		ENDIF;
 	ENDFOR;
 	t2 = GetTickCount64();
 	result.exec_time = t2-t1;
